@@ -1,1 +1,1 @@
-"""Roz tests."""
+"""Kudo tests."""

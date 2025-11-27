@@ -1,5 +1,5 @@
-# Roz
+# Kudo
 
 Agentic Coding
 
-> Roz: What if I known Industry Standard Practices, can I code better than human?
+> Kudo: What if I known Industry Standard Practices, can I code better than human?

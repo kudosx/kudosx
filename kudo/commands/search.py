@@ -1,4 +1,4 @@
-"""Search command for Roz CLI."""
+"""Search command for Kudo CLI."""
 
 import os
 import re
@@ -51,11 +51,11 @@ def search(query, path, search_type, extension, ignore_case, max_results, hidden
 
     Examples:
 
-        roz search "def main"
+        kudo search "def main"
 
-        roz search "TODO" -t content -e py
+        kudo search "TODO" -t content -e py
 
-        roz search "test_*.py" -t file
+        kudo search "test_*.py" -t file
     """
     search_path = Path(path).resolve()
     results = []

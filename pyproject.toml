@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "roz"
-version = "0.1.0a3"
-description = "Roz - An Agentic Coding CLI tool"
+name = "kudo"
+version = "0.1.0a0"
+description = "Kudo - An Agentic Coding CLI tool"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "Roz Team"}
+    {name = "Kudo Team"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -37,15 +37,15 @@ dev = [
 ]
 
 [project.scripts]
-roz = "roz.cli:main"
+kudo = "kudo.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["roz*"]
+include = ["kudo*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.yml", "*.md"]
-roz = ["content/**/*"]
+kudo = ["content/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

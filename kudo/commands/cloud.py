@@ -1,4 +1,4 @@
-"""Cloud command for Roz CLI."""
+"""Cloud command for Kudo CLI."""
 
 import subprocess
 from pathlib import Path
@@ -24,9 +24,9 @@ def cloud(level):
 
     Examples:
 
-        roz cloud
+        kudo cloud
 
-        roz cloud -L 2
+        kudo cloud -L 2
     """
     content_path = get_content_path()
     template_path = content_path / "industry-standard-cloud"
