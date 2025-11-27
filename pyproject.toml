@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "roz"
-version = "0.1.0"
+version = "0.1.0a1"
 description = "Roz - An Agentic Coding CLI tool"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,6 +22,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
     "click>=8.0.0",
@@ -30,8 +32,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
 ]
 
 [project.scripts]

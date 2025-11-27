@@ -1,1 +1,1 @@
-"""Jasmine CLI commands."""
+"""Roz CLI commands."""
