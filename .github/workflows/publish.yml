@@ -29,6 +29,7 @@ jobs:
           path: dist/
 
   publish-pypi:
+    needs: build
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
