@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "jasmine"
+name = "roz"
 version = "0.1.0"
-description = "Jasmine - An Agentic Coding CLI tool"
+description = "Roz - An Agentic Coding CLI tool"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "Jasmine Team"}
+    {name = "Roz Team"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -35,11 +35,11 @@ dev = [
 ]
 
 [project.scripts]
-jasmine = "jasmine.cli:main"
+roz = "roz.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["jasmine*", "content*"]
+include = ["roz*", "content*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.yml"]

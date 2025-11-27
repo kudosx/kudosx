@@ -14,7 +14,8 @@
       "Bash(jasmine search:*)",
       "Bash(jasmine:*)",
       "Bash(tree:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(git remote set-url:*)"
     ],
     "deny": [],
     "ask": []

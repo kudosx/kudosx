@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Jasmine is an Agentic Coding project. This repository is in early development.
+Roz is an Agentic Coding project. This repository is in early development.
 
 ## Custom Commands
 

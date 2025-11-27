@@ -1,5 +1,5 @@
-# Jasmine 
+# Roz
 
-Agentic Coding 
+Agentic Coding
 
-> Jasmine: What if I known Industry Standard Practices, can I code better than human?
+> Roz: What if I known Industry Standard Practices, can I code better than human?
