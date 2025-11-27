@@ -5,6 +5,7 @@ import click
 from kudo import __version__
 from kudo.commands.cloud import cloud
 from kudo.commands.search import search
+from kudo.commands.software import software
 
 
 @click.group()
@@ -16,6 +17,7 @@ def cli():
 
 cli.add_command(cloud)
 cli.add_command(search)
+cli.add_command(software)
 
 
 def main():

@@ -15,7 +15,9 @@
       "Bash(kudo:*)",
       "Bash(tree:*)",
       "Bash(pytest:*)",
-      "Bash(git remote set-url:*)"
+      "Bash(git remote set-url:*)",
+      "Bash(kudo software)",
+      "Bash(python -m pip:*)"
     ],
     "deny": [],
     "ask": []
