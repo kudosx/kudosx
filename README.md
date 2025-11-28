@@ -1,5 +1,5 @@
-# Kudo
+# Kudosx
 
 Agentic Coding
 
-> Kudo: What if I known Industry Standard Practices, can I code better than human?
+> Kudosx: What if I known Industry Standard Practices, can I code better than human?

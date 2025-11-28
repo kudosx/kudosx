@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kudo"
+name = "kudosx"
 version = "0.1.0"
-description = "Kudo - An Agentic Coding CLI tool"
+description = "Kudosx - An Agentic Coding CLI tool"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "Kudo Team"}
+    {name = "Kudosx Team"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -37,16 +37,21 @@ dev = [
 ]
 
 [project.scripts]
-kudo = "kudo.cli:main"
+kudosx = "kudosx.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["kudo*"]
+include = ["kudosx*"]
 
 [tool.setuptools.package-data]
 "*" = ["*.yaml", "*.yml", "*.md"]
-kudo = ["content/**/*"]
+kudosx = ["content/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]

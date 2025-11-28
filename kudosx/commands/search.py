@@ -1,4 +1,4 @@
-"""Search command for Kudo CLI."""
+"""Search command for Kudosx CLI."""
 
 import os
 import re
@@ -51,11 +51,11 @@ def search(query, path, search_type, extension, ignore_case, max_results, hidden
 
     Examples:
 
-        kudo search "def main"
+        kudosx search "def main"
 
-        kudo search "TODO" -t content -e py
+        kudosx search "TODO" -t content -e py
 
-        kudo search "test_*.py" -t file
+        kudosx search "test_*.py" -t file
     """
     search_path = Path(path).resolve()
     results = []

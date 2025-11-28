@@ -1,4 +1,4 @@
-"""Cloud command for Kudo CLI."""
+"""Software command for Kudosx CLI."""
 
 import subprocess
 from pathlib import Path
@@ -17,19 +17,19 @@ def get_content_path() -> Path:
     default=3,
     help="Depth of tree to display (default: 3)",
 )
-def cloud(level):
-    """Show industry-standard cloud project structure.
+def software(level):
+    """Show industry-standard software project structure.
 
-    Displays the folder structure of content/industry-standard-cloud.
+    Displays the folder structure of content/industry-standard-software.
 
     Examples:
 
-        kudo cloud
+        kudosx software
 
-        kudo cloud -L 2
+        kudosx software -L 2
     """
     content_path = get_content_path()
-    template_path = content_path / "industry-standard-cloud"
+    template_path = content_path / "industry-standard-software"
 
     if not template_path.exists():
         click.secho(f"Template not found at {template_path}", fg="red")
