@@ -4,7 +4,7 @@ An AI software team that codes with industry standard practices.
 
 Kudosx orchestrates specialized AI agents (designers, engineers, and product owners) to deliver production-ready code.
 
-## Features
+## Our Best Team
 
 | Agent | Role | Rating | Description |
 |-------|------|--------|-------------|
@@ -13,6 +13,16 @@ Kudosx orchestrates specialized AI agents (designers, engineers, and product own
 | Servius | Backend Engineer | ★★★☆☆ | Develops APIs, databases, and server-side architecture. |
 | Meridex | PO | ★★★☆☆ | Manages product backlog, user stories, and sprint planning. |
 | Teston | QC | ★★☆☆☆ | Tests software quality, identifies bugs, and ensures reliability. |
+
+### Rating Scale
+
+| Rating | Level | Description |
+|--------|-------|-------------|
+| ★☆☆☆☆ | Junior | Learning fundamentals, needs guidance |
+| ★★☆☆☆ | Middle | Independent work, solid skills |
+| ★★★☆☆ | Senior | Leads projects, mentors others |
+| ★★★★☆ | Expert | Deep expertise, solves complex problems |
+| ★★★★★ | Superhuman | Beyond human capability |
 
 ## Claude Code
 
