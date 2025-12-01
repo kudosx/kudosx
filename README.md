@@ -12,6 +12,7 @@ Kudosx orchestrates specialized AI agents (designers, engineers, and product own
 | Frontend Engineer | ★★★☆☆ | Builds responsive UIs with modern frameworks and best practices. |
 | Backend Engineer | ★★★☆☆ | Develops APIs, databases, and server-side architecture. |
 | PO | ★★★☆☆ | Manages product backlog, user stories, and sprint planning. |
+| QC | ★★☆☆☆ | Tests software quality, identifies bugs, and ensures reliability. |
 
 ## Claude Code
 
