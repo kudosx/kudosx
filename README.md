@@ -35,3 +35,5 @@ Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product
 ## Claude Code
 
 Kudosx is designed to work seamlessly with [Claude Code](https://www.claude.com/product/claude-code), Anthropic's official CLI for Claude. It leverages Claude Code's agentic capabilities to orchestrate AI team members and execute software development tasks directly from your terminal.
+
+Powered by **Claude Opus 4.5**, Anthropic's most intelligent model. Best-in-class for coding, agents, and computer use with 200K context window and hybrid reasoning.
