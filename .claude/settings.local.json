@@ -23,7 +23,8 @@
       "Bash(uv run python:*)",
       "Bash(mv:*)",
       "Bash(uv sync:*)",
-      "Bash(python -m pytest:*)"
+      "Bash(python -m pytest:*)",
+      "Bash(ffmpeg:*)"
     ],
     "deny": [],
     "ask": []
