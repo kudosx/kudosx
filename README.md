@@ -10,7 +10,7 @@ Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product
 
 ## Products
 
-- Pomodoro Websites
+- Pomodoro Website
 
 ## Our Best Team
 
