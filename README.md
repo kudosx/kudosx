@@ -2,7 +2,7 @@
 
 An AI software team that codes with industry standard practices.
 
-Kudosx orchestrates specialized AI agents (designers, engineers, and product owners) to deliver high quality products.
+Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product owners) to deliver high quality products.
 
 <p align="center">
   <img src="video.gif" alt="Demo" width="500" />
