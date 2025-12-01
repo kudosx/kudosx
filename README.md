@@ -6,13 +6,13 @@ Kudosx orchestrates specialized AI agents (designers, engineers, and product own
 
 ## Features
 
-| Role | Rating | Description |
-|------|--------|-------------|
-| Designer | ★☆☆☆☆ | Generates wireframes, mockups, and design systems. |
-| Frontend Engineer | ★★★☆☆ | Builds responsive UIs with modern frameworks and best practices. |
-| Backend Engineer | ★★★☆☆ | Develops APIs, databases, and server-side architecture. |
-| PO | ★★★☆☆ | Manages product backlog, user stories, and sprint planning. |
-| QC | ★★☆☆☆ | Tests software quality, identifies bugs, and ensures reliability. |
+| Agent | Role | Rating | Description |
+|-------|------|--------|-------------|
+| Figlet | Designer | ★☆☆☆☆ | Generates wireframes, mockups, and design systems. |
+| Vexel | Frontend Engineer | ★★★☆☆ | Builds responsive UIs with modern frameworks and best practices. |
+| Servius | Backend Engineer | ★★★☆☆ | Develops APIs, databases, and server-side architecture. |
+| Meridex | PO | ★★★☆☆ | Manages product backlog, user stories, and sprint planning. |
+| Teston | QC | ★★☆☆☆ | Tests software quality, identifies bugs, and ensures reliability. |
 
 ## Claude Code
 
