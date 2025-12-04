@@ -1,6 +1,7 @@
 ---
 name: product
 description: Use this skill when helping with product management tasks including feature planning, user stories, requirements documentation, PRDs, roadmaps, prioritization, and product decisions.
+version: 0.1.0
 ---
 
 # Product Role
