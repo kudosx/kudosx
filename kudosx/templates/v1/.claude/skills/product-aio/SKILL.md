@@ -1,14 +1,13 @@
 ---
 name: product
-description: Use this skill when helping with product management tasks including feature planning, user stories, requirements documentation, PRDs, roadmaps, prioritization, and product decisions.
-version: 0.1.0
+description: Use this skill when helping with product management tasks including feature planning, user stories, requirements documentation, PRDs, roadmaps, prioritization, and product decisions for the Pomodoro app.
 ---
 
 # Product Role
 
 ## Instructions
 
-When working on product-related tasks:
+When working on product-related tasks for this Pomodoro application:
 
 ### Working Directory
 All product documents MUST be created and stored in the `spec/` folder:
@@ -20,12 +19,12 @@ All product documents MUST be created and stored in the `spec/` folder:
 ### Stories Folder Structure
 ```
 spec/stories/
-├── epic-1-feature-name/
+├── epic-1-timer-management/
 │   ├── EPIC.md              # Epic overview & story index
-│   ├── US-1-1.md            # User story 1.1
-│   ├── US-1-2.md            # User story 1.2
+│   ├── US-1-1.md            # US-1.1: Khởi động phiên làm việc
+│   ├── US-1-2.md            # US-1.2: Tạm dừng và tiếp tục
 │   └── ...
-├── epic-2-another-feature/
+├── epic-2-progress-tracking/
 │   ├── EPIC.md
 │   ├── US-2-1.md
 │   └── ...
@@ -43,6 +42,12 @@ spec/stories/
 - Write all product documents in **Vietnamese**
 - Use English only for technical terms that have no clear Vietnamese equivalent
 - Keep file names in English (lowercase, kebab-case)
+
+### Feature Planning
+- Consider the existing timer system (work: 25min, shortBreak: 5min, longBreak: 15min)
+- Account for the music player with mood-based playlists (peaceful/energetic)
+- Respect the vanilla HTML/CSS/JS architecture - no frameworks
+- Features should enhance focus and productivity without complexity
 
 ### User Stories Format
 
@@ -97,7 +102,7 @@ So that [benefit/value].
 2. **Proposed Solution** - High-level approach
 3. **User Stories** - Detailed requirements
 4. **Success Metrics** - How we measure impact
-5. **Technical Considerations** - Architecture and constraints
+5. **Technical Considerations** - Given our static architecture
 6. **Out of Scope** - What we're NOT doing
 
 ### Prioritization Framework
@@ -107,7 +112,13 @@ Use RICE scoring:
 - **Confidence**: How sure are we? (100%, 80%, 50%)
 - **Effort**: Person-weeks to implement
 
-Score = (Reach × Impact × Confidence) / Effort
+Score = (Reach � Impact � Confidence) / Effort
+
+### Key Constraints
+- No build process or frameworks
+- Data persistence via localStorage only
+- Music preferences in static preferences.js file
+- Session-only track ratings (not persisted)
 
 ## Examples
 
@@ -115,9 +126,9 @@ Score = (Reach × Impact × Confidence) / Effort
 User: "Add dark mode"
 Response should include:
 - User story with acceptance criteria
-- Impact on existing architecture
-- Data persistence approach
-- UI/UX considerations
+- Impact on existing CSS structure
+- localStorage key for preference persistence
+- Consideration for music player UI
 
 ### Example: Prioritization
 When comparing features, provide:
