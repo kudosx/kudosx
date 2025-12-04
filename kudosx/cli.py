@@ -4,6 +4,7 @@ import click
 
 from kudosx import __version__
 from kudosx.commands.cloud import cloud
+from kudosx.commands.init import init_project
 from kudosx.commands.search import search
 from kudosx.commands.software import software
 
@@ -16,6 +17,7 @@ def cli():
 
 
 cli.add_command(cloud)
+cli.add_command(init_project)
 cli.add_command(search)
 cli.add_command(software)
 
