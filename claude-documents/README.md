@@ -8,7 +8,8 @@ Useful resources and documentation for working with Claude Code.
 
 ## Agent Skills 
 
-Official Document 
+Official documents
+
 * [Build with Claude Code, Agent Skills](https://code.claude.com/docs/en/skills), Claude Code Docs (October 2025)
 
 Blog Posts and Articles
@@ -19,5 +20,5 @@ Blog Posts and Articles
 
 Skill Examples
 
-* [Claude Official Skills](https://github.com/anthropics/skills)
+* [Claude Official Skills](https://github.com/anthropics/skills), Anthoropics Github (November 2025)
 * [Claude Skills Marketplace](https://skillsmp.com/), Skills Marrketplace (December 2025)
