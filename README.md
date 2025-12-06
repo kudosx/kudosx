@@ -7,7 +7,6 @@
 Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product owners) to deliver high quality products.
 
 [![GitHub Stars](https://img.shields.io/github/stars/kudosx/kudosx?style=for-the-badge&logo=github&logoColor=white&label=Stars&color=gold)](https://github.com/kudosx/kudosx)
-[![Claude Code](https://img.shields.io/badge/Claude_Code-SDK_Integrated-blueviolet?style=for-the-badge&logo=anthropic&logoColor=white)](https://claude.ai/code)
 [![Powered By](https://img.shields.io/badge/Powered_By-Claude_Opus_4.5-orange?style=for-the-badge&logo=anthropic&logoColor=white)](https://anthropic.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
@@ -15,11 +14,11 @@ https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 
 </div>
 
-## Demo Products
+## 🚀 Demo Products
 
 - [Pomodoro](https://github.com/kudosx/demo-pomodoro) - A pomodoro timer with start/stop controls and a today view showing completed pomodoros and breaks.
 
-## Our Best Team
+## 🤖 Sub Agents
 
 | Agent | Role | Rating | Description |
 |-------|------|--------|-------------|
@@ -29,22 +28,15 @@ https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 | Meridex | PO | ★★★☆☆ | Manages product backlog, user stories, and sprint planning. |
 | Teston | QC | ★★☆☆☆ | Tests software quality, identifies bugs, and ensures reliability. |
 
-### Rating Scale
+**Rating Scale**
 
-| Rating | Level | Description |
-|--------|-------|-------------|
-| ★☆☆☆☆ | Junior | Learning fundamentals, needs guidance |
-| ★★☆☆☆ | Middle | Independent work, solid skills |
-| ★★★☆☆ | Senior | Leads projects, mentors others |
-| ★★★★☆ | Expert | Deep expertise, solves complex problems |
-| ★★★★★ | Superhuman | Beyond human capability |
+★☆☆☆☆ Junior · ★★☆☆☆ Middle · ★★★☆☆ Senior · ★★★★☆ Expert · ★★★★★ Superhuman
 
-## Skills
+## 🛠️ Skills
 
 Kudosx utilizes specialized Skills to enhance agent capabilities and streamline workflows.
 
 - [Browser Use](https://github.com/kudosx/claude-skill-browser-use) - Web scraping, screenshots, form filling, file downloads/uploads, Google/DuckDuckGo image search, YouTube video downloading, and TikTok video downloading.
-
 
 ## Claude Code
 

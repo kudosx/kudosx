@@ -3,8 +3,10 @@
 import click
 
 from kudosx import __version__
+from kudosx.commands.add import add
 from kudosx.commands.cloud import cloud
 from kudosx.commands.init import init_project
+from kudosx.commands.list import list_skills
 from kudosx.commands.search import search
 from kudosx.commands.software import software
 
@@ -16,8 +18,10 @@ def cli():
     pass
 
 
+cli.add_command(add)
 cli.add_command(cloud)
 cli.add_command(init_project)
+cli.add_command(list_skills)
 cli.add_command(search)
 cli.add_command(software)
 

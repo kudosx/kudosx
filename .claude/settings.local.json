@@ -27,7 +27,11 @@
       "Bash(ffmpeg:*)",
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(uv run kudosx add --help:*)",
+      "Bash(python -m kudosx.cli:*)",
+      "Bash(uv run:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
