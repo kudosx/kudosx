@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kudosx"
-version = "0.2.2"
-description = "Kudosx - An Agentic Coding CLI tool"
+version = "0.2.3"
+description = "Kudosx - An AI software team that builds products with industry standard practices."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

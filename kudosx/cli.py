@@ -14,7 +14,7 @@ from kudosx.commands.software import software
 @click.group()
 @click.version_option(version=__version__, prog_name="kudosx")
 def cli():
-    """Kudosx - An Agentic Coding CLI tool."""
+    """Kudosx - An AI software team that builds products with industry standard practices."""
     pass
 
 

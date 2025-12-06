@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kudo is an Agentic Coding project. This repository is in early development.
+Kudosx is an AI software team that builds products with industry standard practices. This repository is in early development.
 
 ## Custom Commands
 

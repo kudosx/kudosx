@@ -2,7 +2,7 @@
 
 # Kudosx
 
-**An AI software team that codes with industry standard practices.**
+**An AI software team that builds products with industry standard practices.**
 
 Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product owners) to deliver high quality products.
 
