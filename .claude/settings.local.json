@@ -24,7 +24,10 @@
       "Bash(mv:*)",
       "Bash(uv sync:*)",
       "Bash(python -m pytest:*)",
-      "Bash(ffmpeg:*)"
+      "Bash(ffmpeg:*)",
+      "Bash(git fetch:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

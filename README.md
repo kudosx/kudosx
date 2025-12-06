@@ -6,9 +6,9 @@ Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product
 
 https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 
-## Products
+## Demo Products
 
-- Pomodoro Website
+- [Pomodoro](https://github.com/kudosx/demo-pomodoro) - A pomodoro timer with start/stop controls and a today view showing completed pomodoros and breaks.
 
 ## Our Best Team
 
@@ -29,6 +29,13 @@ https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 | ★★★☆☆ | Senior | Leads projects, mentors others |
 | ★★★★☆ | Expert | Deep expertise, solves complex problems |
 | ★★★★★ | Superhuman | Beyond human capability |
+
+## Skills
+
+Kudosx utilizes specialized Skills to enhance agent capabilities and streamline workflows.
+
+- [Browser Use](https://github.com/kudosx/claude-skill-browser-use) - Web scraping, screenshots, form filling, file downloads/uploads, Google/DuckDuckGo image search, YouTube video downloading, and TikTok video downloading.
+
 
 ## Claude Code
 
