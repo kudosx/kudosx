@@ -4,15 +4,9 @@ An AI software team that codes with industry standard practices.
 
 Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product owners) to deliver high quality products.
 
-<p align="center">
-  <img src="video.gif" alt="Demo" width="500" />
-</p>
-
-## Products
-
-
 https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 
+## Products
 
 - Pomodoro Website
 
