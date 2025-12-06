@@ -30,7 +30,7 @@ https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 
 **Rating Scale**
 
-★☆☆☆☆ Junior · ★★☆☆☆ Middle · ★★★☆☆ Senior · ★★★★☆ Expert · ★★★★★ Superhuman
+★ Junior · ★★☆ Middle · ★★★ Senior · ★★★★ Expert · ★★★★★ Superhuman
 
 ## 🛠️ Skills
 
