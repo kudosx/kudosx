@@ -31,7 +31,9 @@
       "Bash(uv run kudosx add --help:*)",
       "Bash(python -m kudosx.cli:*)",
       "Bash(uv run:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(git tag:*)",
+      "Bash(gh release create:*)"
     ],
     "deny": [],
     "ask": []
