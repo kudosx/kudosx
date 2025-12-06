@@ -37,6 +37,11 @@ SKILLS = {
         "source_path": ".claude/skills/browser-use",  # Path within repo to extract
         "target_dir": "browser-use",  # Target folder name in ~/.claude/skills/
     },
+    "skill-cloud-aws": {
+        "repo": "kudosx/claude-skill-cloud-aws",
+        "source_path": ".claude/skills/cloud-aws",
+        "target_dir": "cloud-aws",
+    },
 }
 
 
@@ -125,6 +130,8 @@ def add(name: str, force: bool, local: bool):
     Available skills:
 
         skill-browser-use    Browser automation skill
+
+        skill-cloud-aws      AWS cloud management skill
 
     Examples:
 
