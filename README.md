@@ -1,10 +1,19 @@
+<div align="center">
+
 # Kudosx
 
-An AI software team that codes with industry standard practices.
+**An AI software team that codes with industry standard practices.**
 
 Kudosx orchestrates specialized AI agents (designers, engineers, QC, and product owners) to deliver high quality products.
 
+[![GitHub Stars](https://img.shields.io/github/stars/kudosx/kudosx?style=for-the-badge&logo=github&logoColor=white&label=Stars&color=gold)](https://github.com/kudosx/kudosx)
+[![Claude Code](https://img.shields.io/badge/Claude_Code-SDK_Integrated-blueviolet?style=for-the-badge&logo=anthropic&logoColor=white)](https://claude.ai/code)
+[![Powered By](https://img.shields.io/badge/Powered_By-Claude_Opus_4.5-orange?style=for-the-badge&logo=anthropic&logoColor=white)](https://anthropic.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
 https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
+
+</div>
 
 ## Demo Products
 
