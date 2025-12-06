@@ -12,7 +12,7 @@ import click
 
 # Mapping of skill names to their GitHub repos and target directories
 SKILLS = {
-    "skill-browse-use": {
+    "skill-browser-use": {
         "repo": "kudosx/claude-skill-browser-use",
         "source_path": ".claude/skills/browser-use",  # Path within repo to extract
         "target_dir": "browser-use",  # Target folder name in ~/.claude/skills/
@@ -96,15 +96,15 @@ def add(name: str, force: bool, local: bool):
 
     Available skills:
 
-        skill-browse-use    Browser automation skill
+        skill-browser-use    Browser automation skill
 
     Examples:
 
-        kudosx add skill-browse-use
+        kudosx add skill-browser-use
 
-        kudosx add skill-browse-use --force
+        kudosx add skill-browser-use --force
 
-        kudosx add skill-browse-use --local
+        kudosx add skill-browser-use --local
     """
     if name not in SKILLS:
         available = ", ".join(SKILLS.keys())
