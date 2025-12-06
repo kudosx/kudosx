@@ -1,13 +1,33 @@
 """Add command for Kudosx CLI - Install skills and extensions."""
 
+import json
 import shutil
 import tempfile
 import zipfile
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 
 import click
+
+
+def get_latest_version(repo: str) -> str | None:
+    """Fetch the latest release version from GitHub API.
+
+    Args:
+        repo: GitHub repo in format "owner/repo"
+
+    Returns:
+        Version string (e.g., "v0.1.0") or None if not found
+    """
+    api_url = f"https://api.github.com/repos/{repo}/releases/latest"
+    try:
+        request = Request(api_url, headers={"Accept": "application/vnd.github.v3+json"})
+        with urlopen(request, timeout=10) as response:
+            data = json.loads(response.read().decode())
+            return data.get("tag_name")
+    except (URLError, HTTPError, json.JSONDecodeError):
+        return None
 
 
 # Mapping of skill names to their GitHub repos and target directories
@@ -20,13 +40,16 @@ SKILLS = {
 }
 
 
-def download_and_extract_skill(repo: str, source_path: str, target_path: Path) -> None:
+def download_and_extract_skill(
+    repo: str, source_path: str, target_path: Path, version: str | None = None
+) -> None:
     """Download a GitHub repo and extract only the skill folder.
 
     Args:
         repo: GitHub repo in format "owner/repo"
         source_path: Path within the repo to the skill folder (e.g., ".claude/skills/browser-use")
         target_path: Path to extract the skill to
+        version: Version string to save in VERSION file
     """
     zip_url = f"https://github.com/{repo}/archive/refs/heads/main.zip"
 
@@ -73,6 +96,11 @@ def download_and_extract_skill(repo: str, source_path: str, target_path: Path) -
 
         # Copy only the skill folder to target
         shutil.copytree(skill_source, target_path)
+
+        # Save version file if version is provided
+        if version:
+            version_file = target_path / "VERSION"
+            version_file.write_text(version + "\n")
 
 
 @click.command("add")
@@ -130,11 +158,21 @@ def add(name: str, force: bool, local: bool):
         raise SystemExit(1)
 
     location = "project" if local else "global"
+
+    # Fetch latest version from GitHub
+    click.echo(f"Fetching latest version from {repo}...")
+    version = get_latest_version(repo)
+    if version:
+        click.echo(f"Latest version: {version}")
+
     click.echo(f"Installing '{name}' from {repo} ({location})...")
 
     try:
-        download_and_extract_skill(repo, source_path, target_path)
-        click.secho(f"Successfully installed to {target_path}", fg="green")
+        download_and_extract_skill(repo, source_path, target_path, version)
+        if version:
+            click.secho(f"Successfully installed {name} {version} to {target_path}", fg="green")
+        else:
+            click.secho(f"Successfully installed {name} to {target_path}", fg="green")
     except click.ClickException:
         raise
     except Exception as e:

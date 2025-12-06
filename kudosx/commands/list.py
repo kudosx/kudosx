@@ -13,7 +13,7 @@ def get_items(directory: Path, pattern: str = "*") -> list[dict]:
         pattern: Glob pattern to match (default: "*")
 
     Returns:
-        List of dicts with name and path
+        List of dicts with name, path, and version (for skills)
     """
     if not directory.exists():
         return []
@@ -21,7 +21,13 @@ def get_items(directory: Path, pattern: str = "*") -> list[dict]:
     items = []
     for item in directory.glob(pattern):
         if not item.name.startswith("."):
-            items.append({"name": item.name, "path": item})
+            item_dict = {"name": item.name, "path": item}
+            # Check for VERSION file in skill directories
+            if item.is_dir():
+                version_file = item / "VERSION"
+                if version_file.exists():
+                    item_dict["version"] = version_file.read_text().strip()
+            items.append(item_dict)
     return sorted(items, key=lambda x: x["name"])
 
 
@@ -42,7 +48,11 @@ def print_section(title: str, items: list[dict], is_dir: bool = True) -> int:
             name = item["name"]
             if not is_dir and name.endswith(".md"):
                 name = name[:-3]  # Remove .md extension for commands
-            click.echo(f"  • {name}")
+            version = item.get("version")
+            if version:
+                click.echo(f"  • {name} ({version})")
+            else:
+                click.echo(f"  • {name}")
     else:
         click.echo("  (none)")
     return len(items)

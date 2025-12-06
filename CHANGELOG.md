@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.2 - 2025-12-06
+
+### Added
+
+- Version display for skills in `list` command - shows version from GitHub releases
+- Version fetching from GitHub releases API in `add` command
+- VERSION file saved to installed skills for tracking installed version
+- Release workflow option in `/commit-code` command
+
 ## 0.2.1 - 2025-12-06
 
 ### Fixed
