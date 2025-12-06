@@ -36,8 +36,13 @@ https://github.com/user-attachments/assets/334c7c26-5807-4534-955a-0f01c0d3b8e4
 
 Kudosx utilizes specialized Skills to enhance agent capabilities and streamline workflows.
 
-- [Browser Use](https://github.com/kudosx/claude-skill-browser-use) - Web scraping, screenshots, form filling, file downloads/uploads, Google/DuckDuckGo image search, YouTube video downloading, and TikTok video downloading.
+**Cloud Skills**
+
 - [Cloud AWS](https://github.com/kudosx/claude-skill-cloud-aws) - AWS cloud management skill.
+
+**General Skills**
+
+- [Browser Use](https://github.com/kudosx/claude-skill-browser-use) - Web scraping, screenshots, form filling, file downloads/uploads, Google/DuckDuckGo image search, YouTube video downloading, and TikTok video downloading.
 
 ## Claude Code
 
