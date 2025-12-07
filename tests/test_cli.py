@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 from click.testing import CliRunner
 
 from kudosx.cli import cli
+from kudosx import __version__
 
 
 def test_cli_version():
@@ -13,7 +14,7 @@ def test_cli_version():
     result = runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
     assert "kudosx" in result.output
-    assert "0.1.0" in result.output
+    assert __version__ in result.output
 
 
 def test_cli_help():

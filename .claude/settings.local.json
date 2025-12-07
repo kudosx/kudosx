@@ -33,7 +33,21 @@
       "Bash(uv run:*)",
       "Bash(cat:*)",
       "Bash(git tag:*)",
-      "Bash(gh release create:*)"
+      "Bash(gh release create:*)",
+      "WebSearch",
+      "WebFetch(domain:www.roysac.com)",
+      "WebFetch(domain:thenerdshow.com)",
+      "Bash(for i in {1..3})",
+      "Bash(do uv run python /Users/anhv/projects/kudosx/kudosx/utils/banner.py)",
+      "Bash(done)",
+      "Bash(echo:*)",
+      "Bash(timeout 3 uv run:*)",
+      "Bash(grep:*)",
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && grep -E \"\"\"\"(Task|agent|subagent|SlashCommand)\"\"\"\" {} | head -10')",
+      "Bash(claude --version:*)",
+      "Bash(claude usage)",
+      "Bash(timeout 5 claude usage --help:*)",
+      "Bash(timeout 5 claude:*)"
     ],
     "deny": [],
     "ask": []
