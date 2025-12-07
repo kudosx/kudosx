@@ -25,6 +25,15 @@ def test_cli_help():
     assert "Kudosx" in result.output
 
 
+@patch("kudosx.commands.explore.ExploreTUI.run")
+def test_cli_default_runs_explore(mock_run):
+    """Test that running kudosx without subcommand launches explore."""
+    runner = CliRunner()
+    result = runner.invoke(cli, [])
+    assert result.exit_code == 0
+    mock_run.assert_called_once()
+
+
 def test_search_help():
     """Test search command help."""
     runner = CliRunner()

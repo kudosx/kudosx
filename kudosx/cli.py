@@ -13,11 +13,14 @@ from kudosx.commands.search import search
 from kudosx.commands.software import software
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.version_option(version=__version__, prog_name="kudosx")
-def cli():
+@click.pass_context
+def cli(ctx):
     """Kudosx - An AI software team that builds products with industry standard practices."""
-    pass
+    if ctx.invoked_subcommand is None:
+        # Default to explore when no subcommand is given
+        ctx.invoke(explore)
 
 
 cli.add_command(add)
