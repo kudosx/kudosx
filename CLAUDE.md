@@ -18,3 +18,4 @@ When releasing a new version, update these files:
 - `kudosx/__init__.py` - `__version__ = "X.X.X"`
 - `VERSION` - `X.X.X`
 - `CHANGELOG.md` - Add new version section
+- `uv.lock` - Run `uv lock` to update lockfile
