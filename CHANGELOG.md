@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.1 - 2025-12-08
+
+### Fixed
+
+- Correct model pricing using LiteLLM rates (opus-4-5: $5/$25, haiku-4-5: $1/$5)
+- Deduplication of usage entries using message.id + requestId hash
+- Local timezone conversion for accurate date grouping
+
+### Changed
+
+- Per-model cost calculation for accurate usage costs
+- Display all models in usage view (multi-line bullet list)
+- Skip synthetic models in usage tracking
+
 ## 0.3.0 - 2025-12-07
 
 ### Added

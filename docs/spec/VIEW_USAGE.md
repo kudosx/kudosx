@@ -26,13 +26,28 @@ Hiển thị thông tin usage của Claude Code API trong TUI explore với các
 | Column | Width | Description |
 |--------|-------|-------------|
 | Date | 10 | Ngày/Tuần/Tháng (format: YYYY-MM-DD) |
-| Models | 25 | Danh sách models sử dụng (bullet list) |
+| Models | 25 | Danh sách TẤT CẢ models sử dụng (bullet list, multi-line) |
 | Input | 10 | Input tokens |
 | Output | 10 | Output tokens |
 | Cache Create | 11 | Cache creation tokens |
 | Cache Read | 11 | Cache read tokens |
 | Total Tokens | 11 | Tổng tokens |
 | Cost (USD) | 10 | Chi phí USD |
+
+### Models Display
+
+Cột Models hiển thị **TẤT CẢ** các models được sử dụng trong period đó:
+- Mỗi model một dòng với format `- model-name`
+- Không giới hạn số lượng models
+- Models được normalize: `opus-4-5`, `sonnet-4-5`, `haiku-4-5`
+- Skip synthetic models (`<synthetic>`)
+
+Ví dụ với 3 models:
+```
+- haiku-4-5
+- opus-4-5
+- sonnet-4-5
+```
 
 ### Table Format Example
 
@@ -59,9 +74,10 @@ Hiển thị thông tin usage của Claude Code API trong TUI explore với các
 
 - **Numbers**: Dùng thousand separator (,) - ví dụ: 1,234,567
 - **Truncation**: Số dài hơn column width sẽ truncate với "…" - ví dụ: 53,041,9…
-- **Cost**: Format "$X.XX"
-- **Models**: Hiển thị dạng bullet list "- model-name"
+- **Cost**: Format "$X.XX" - tính theo per-model pricing từ LiteLLM
+- **Models**: Hiển thị TẤT CẢ models dạng bullet list "- model-name" (multi-line)
 - **Date**: Split thành 2 dòng nếu cần (YYYY trên, MM-DD dưới)
+- **Model names**: Normalize thành short form (opus-4-5, sonnet-4-5, haiku-4-5)
 
 ### Keyboard Shortcuts
 
@@ -92,23 +108,33 @@ Hiển thị thông tin usage của Claude Code API trong TUI explore với các
 
 ## Data Source
 
-### Raw Data from Claude CLI
+### Session Files
+
+Data được parse từ Claude Code session files tại `~/.claude/projects/`:
 
 ```python
-def get_claude_usage() -> str:
-    """Get Claude Code usage by running claude usage command."""
-    try:
-        result = subprocess.run(
-            ["claude", "usage"],
-            capture_output=True,
-            text=True,
-            timeout=10,
-        )
-        if result.returncode == 0:
-            return result.stdout
-    except (subprocess.TimeoutExpired, FileNotFoundError, Exception):
-        pass
-    return "Usage data unavailable"
+from kudosx.utils.claude_usage import get_claude_usage, aggregate_usage
+
+usage = get_claude_usage()  # Parse all session files
+daily = aggregate_usage(usage, "daily")  # Aggregate by period
+```
+
+### Data Processing (matching ccusage behavior)
+
+1. **Deduplication**: Skip duplicate entries using `message.id:requestId` hash
+2. **Timezone**: Sử dụng local timezone để nhóm ngày (không dùng UTC)
+3. **Schema Validation**: Require cả `input_tokens` và `output_tokens`
+4. **Skip Synthetic**: Bỏ qua model `<synthetic>`
+5. **Per-model Cost**: Tính cost chính xác cho từng model
+
+### Model Pricing (from LiteLLM)
+
+```python
+MODEL_PRICING = {
+    "opus-4-5":   {"input": 5.0, "output": 25.0, "cache_create": 6.25, "cache_read": 0.50},
+    "sonnet-4-5": {"input": 3.0, "output": 15.0, "cache_create": 3.75, "cache_read": 0.30},
+    "haiku-4-5":  {"input": 1.0, "output": 5.0,  "cache_create": 1.25, "cache_read": 0.10},
+}
 ```
 
 ### Data Structures

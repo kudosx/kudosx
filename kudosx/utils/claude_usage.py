@@ -2,16 +2,54 @@
 """Calculate Claude Code CLI usage from session files."""
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from collections import defaultdict
 from typing import Literal
 
-# Claude API pricing per 1M tokens (USD)
+
+def _create_unique_hash(data: dict) -> str | None:
+    """Create a unique hash for deduplication using message.id and requestId.
+
+    Returns None if either field is missing (entry won't be deduplicated).
+    """
+    msg = data.get("message", {})
+    message_id = msg.get("id")
+    request_id = data.get("requestId")
+
+    if message_id is None or request_id is None:
+        return None
+
+    return f"{message_id}:{request_id}"
+
+
+def _parse_timestamp_to_local_date(timestamp_str: str) -> str | None:
+    """Parse ISO timestamp and convert to local date string (YYYY-MM-DD).
+
+    Uses system local timezone for date grouping (matching ccusage behavior).
+    """
+    if not timestamp_str:
+        return None
+
+    try:
+        # Parse ISO format (handles both 'Z' suffix and +00:00)
+        if timestamp_str.endswith("Z"):
+            dt = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+        else:
+            dt = datetime.fromisoformat(timestamp_str)
+
+        # Convert to local timezone
+        local_dt = dt.astimezone()
+        return local_dt.strftime("%Y-%m-%d")
+    except (ValueError, TypeError):
+        return None
+
+# Claude API pricing per 1M tokens (USD) - from LiteLLM
+# https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json
 MODEL_PRICING = {
-    "opus-4-5": {"input": 15.0, "output": 75.0, "cache_create": 18.75, "cache_read": 1.50},
+    "opus-4-5": {"input": 5.0, "output": 25.0, "cache_create": 6.25, "cache_read": 0.50},
     "sonnet-4-5": {"input": 3.0, "output": 15.0, "cache_create": 3.75, "cache_read": 0.30},
-    "haiku-4-5": {"input": 0.80, "output": 4.0, "cache_create": 1.0, "cache_read": 0.08},
+    "haiku-4-5": {"input": 1.0, "output": 5.0, "cache_create": 1.25, "cache_read": 0.10},
 }
 DEFAULT_PRICING = {"input": 3.0, "output": 15.0, "cache_create": 3.75, "cache_read": 0.30}
 
@@ -19,8 +57,12 @@ UsagePeriod = Literal["daily", "weekly", "monthly"]
 
 
 def get_claude_usage(projects_dir: Path = None) -> dict:
-    """Parse all Claude Code session files and calculate token usage."""
+    """Parse all Claude Code session files and calculate token usage.
 
+    Features:
+    - Deduplication using message.id + requestId (matching ccusage behavior)
+    - Local timezone for date grouping (matching ccusage behavior)
+    """
     if projects_dir is None:
         projects_dir = Path.home() / ".claude" / "projects"
 
@@ -31,6 +73,7 @@ def get_claude_usage(projects_dir: Path = None) -> dict:
         "cache_read_tokens": 0,
         "sessions": 0,
         "messages": 0,
+        "duplicates_skipped": 0,
         "by_model": defaultdict(lambda: {"input": 0, "output": 0}),
         "by_date": defaultdict(lambda: {
             "input": 0,
@@ -38,8 +81,17 @@ def get_claude_usage(projects_dir: Path = None) -> dict:
             "cache_create": 0,
             "cache_read": 0,
             "models": set(),
+            "by_model": defaultdict(lambda: {
+                "input": 0,
+                "output": 0,
+                "cache_create": 0,
+                "cache_read": 0,
+            }),
         }),
     }
+
+    # Track processed entries for deduplication
+    processed_hashes: set[str] = set()
 
     for project_dir in projects_dir.iterdir():
         if not project_dir.is_dir():
@@ -59,40 +111,66 @@ def get_claude_usage(projects_dir: Path = None) -> dict:
                         except json.JSONDecodeError:
                             continue
 
-                        # Extract usage from assistant messages
-                        if data.get("type") == "assistant":
-                            msg = data.get("message", {})
-                            msg_usage = msg.get("usage", {})
+                        # Validate required fields (matching ccusage schema)
+                        msg = data.get("message")
+                        if not isinstance(msg, dict):
+                            continue
 
-                            if msg_usage:
-                                usage["messages"] += 1
+                        msg_usage = msg.get("usage")
+                        if not isinstance(msg_usage, dict):
+                            continue
 
-                                input_tokens = msg_usage.get("input_tokens", 0)
-                                output_tokens = msg_usage.get("output_tokens", 0)
-                                cache_creation = msg_usage.get("cache_creation_input_tokens", 0)
-                                cache_read = msg_usage.get("cache_read_input_tokens", 0)
+                        # Require both input_tokens and output_tokens
+                        input_tokens = msg_usage.get("input_tokens")
+                        output_tokens = msg_usage.get("output_tokens")
+                        if not isinstance(input_tokens, (int, float)):
+                            continue
+                        if not isinstance(output_tokens, (int, float)):
+                            continue
 
-                                usage["total_input_tokens"] += input_tokens
-                                usage["total_output_tokens"] += output_tokens
-                                usage["cache_creation_tokens"] += cache_creation
-                                usage["cache_read_tokens"] += cache_read
+                        # Deduplication: skip if we've seen this message+request combo
+                        unique_hash = _create_unique_hash(data)
+                        if unique_hash is not None:
+                            if unique_hash in processed_hashes:
+                                usage["duplicates_skipped"] += 1
+                                continue
+                            processed_hashes.add(unique_hash)
 
-                                # Track by model
-                                model = msg.get("model", "unknown")
-                                usage["by_model"][model]["input"] += input_tokens
-                                usage["by_model"][model]["output"] += output_tokens
+                        # Convert tokens to int
+                        input_tokens = int(input_tokens)
+                        output_tokens = int(output_tokens)
+                        cache_creation = int(msg_usage.get("cache_creation_input_tokens", 0) or 0)
+                        cache_read = int(msg_usage.get("cache_read_input_tokens", 0) or 0)
 
-                                # Track by date with full details
-                                timestamp = data.get("timestamp", "")
-                                if timestamp:
-                                    date = timestamp[:10]  # YYYY-MM-DD
-                                    usage["by_date"][date]["input"] += input_tokens
-                                    usage["by_date"][date]["output"] += output_tokens
-                                    usage["by_date"][date]["cache_create"] += cache_creation
-                                    usage["by_date"][date]["cache_read"] += cache_read
-                                    # Normalize model name
-                                    model_short = normalize_model_name(model)
-                                    usage["by_date"][date]["models"].add(model_short)
+                        usage["messages"] += 1
+                        usage["total_input_tokens"] += input_tokens
+                        usage["total_output_tokens"] += output_tokens
+                        usage["cache_creation_tokens"] += cache_creation
+                        usage["cache_read_tokens"] += cache_read
+
+                        # Track by model (skip synthetic)
+                        model = msg.get("model", "unknown")
+                        if model and model != "<synthetic>":
+                            usage["by_model"][model]["input"] += input_tokens
+                            usage["by_model"][model]["output"] += output_tokens
+
+                        # Track by date using LOCAL timezone
+                        timestamp = data.get("timestamp", "")
+                        date = _parse_timestamp_to_local_date(timestamp)
+                        if date:
+                            usage["by_date"][date]["input"] += input_tokens
+                            usage["by_date"][date]["output"] += output_tokens
+                            usage["by_date"][date]["cache_create"] += cache_creation
+                            usage["by_date"][date]["cache_read"] += cache_read
+                            # Normalize model name (skip synthetic models)
+                            model_short = normalize_model_name(model)
+                            if model_short:
+                                usage["by_date"][date]["models"].add(model_short)
+                                # Track per-model tokens for accurate cost calculation
+                                usage["by_date"][date]["by_model"][model_short]["input"] += input_tokens
+                                usage["by_date"][date]["by_model"][model_short]["output"] += output_tokens
+                                usage["by_date"][date]["by_model"][model_short]["cache_create"] += cache_creation
+                                usage["by_date"][date]["by_model"][model_short]["cache_read"] += cache_read
 
             except Exception as e:
                 print(f"Error reading {session_file}: {e}")
@@ -100,8 +178,13 @@ def get_claude_usage(projects_dir: Path = None) -> dict:
     return usage
 
 
-def normalize_model_name(model: str) -> str:
-    """Normalize model name to short form."""
+def normalize_model_name(model: str) -> str | None:
+    """Normalize model name to short form.
+
+    Returns None for synthetic/unknown models that should be skipped.
+    """
+    if not model or model == "<synthetic>":
+        return None
     if "opus" in model.lower():
         return "opus-4-5"
     elif "sonnet" in model.lower():
@@ -134,12 +217,28 @@ def calculate_cost(
     cache_create: int,
     cache_read: int,
     models: set[str] | None = None,
+    by_model: dict | None = None,
 ) -> float:
     """Calculate cost in USD based on token usage.
 
-    Uses average pricing if multiple models, or specific model pricing if single model.
+    If by_model is provided, calculates cost per-model for accuracy.
+    Otherwise uses average pricing if multiple models, or specific model pricing if single.
     """
-    # Use average of models if multiple, or specific pricing if single
+    # If we have per-model breakdown, calculate cost for each model separately
+    if by_model:
+        total_cost = 0.0
+        for model_name, tokens in by_model.items():
+            pricing = MODEL_PRICING.get(model_name, DEFAULT_PRICING)
+            model_cost = (
+                (tokens["input"] / 1_000_000) * pricing["input"]
+                + (tokens["output"] / 1_000_000) * pricing["output"]
+                + (tokens["cache_create"] / 1_000_000) * pricing["cache_create"]
+                + (tokens["cache_read"] / 1_000_000) * pricing["cache_read"]
+            )
+            total_cost += model_cost
+        return total_cost
+
+    # Fallback: use single model pricing or default
     if models and len(models) == 1:
         model = next(iter(models))
         pricing = MODEL_PRICING.get(model, DEFAULT_PRICING)
@@ -193,10 +292,13 @@ def aggregate_usage(usage_data: dict, period: UsagePeriod) -> list[dict]:
             data = by_date[date_str]
             models = sorted(data.get("models", set()))
             total = data["input"] + data["output"] + data["cache_create"] + data["cache_read"]
+            # Use per-model breakdown for accurate cost calculation
+            by_model_data = dict(data.get("by_model", {}))
             cost = calculate_cost(
                 data["input"], data["output"],
                 data["cache_create"], data["cache_read"],
                 data.get("models"),
+                by_model=by_model_data if by_model_data else None,
             )
             result.append({
                 "date": date_str,
@@ -214,7 +316,9 @@ def aggregate_usage(usage_data: dict, period: UsagePeriod) -> list[dict]:
 
     elif period == "weekly":
         by_week = defaultdict(lambda: {
-            "input": 0, "output": 0, "cache_create": 0, "cache_read": 0, "models": set()
+            "input": 0, "output": 0, "cache_create": 0, "cache_read": 0,
+            "models": set(),
+            "by_model": defaultdict(lambda: {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}),
         })
         for date_str, data in by_date.items():
             week_key = get_week_key(date_str)
@@ -223,16 +327,24 @@ def aggregate_usage(usage_data: dict, period: UsagePeriod) -> list[dict]:
             by_week[week_key]["cache_create"] += data["cache_create"]
             by_week[week_key]["cache_read"] += data["cache_read"]
             by_week[week_key]["models"].update(data.get("models", set()))
+            # Aggregate per-model data
+            for model_name, model_tokens in data.get("by_model", {}).items():
+                by_week[week_key]["by_model"][model_name]["input"] += model_tokens["input"]
+                by_week[week_key]["by_model"][model_name]["output"] += model_tokens["output"]
+                by_week[week_key]["by_model"][model_name]["cache_create"] += model_tokens["cache_create"]
+                by_week[week_key]["by_model"][model_name]["cache_read"] += model_tokens["cache_read"]
 
         result = []
         for week_key in sorted(by_week.keys()):
             data = by_week[week_key]
             models = sorted(data["models"])
             total = data["input"] + data["output"] + data["cache_create"] + data["cache_read"]
+            by_model_data = dict(data.get("by_model", {}))
             cost = calculate_cost(
                 data["input"], data["output"],
                 data["cache_create"], data["cache_read"],
                 data["models"],
+                by_model=by_model_data if by_model_data else None,
             )
             result.append({
                 "date": week_key,
@@ -250,7 +362,9 @@ def aggregate_usage(usage_data: dict, period: UsagePeriod) -> list[dict]:
 
     elif period == "monthly":
         by_month = defaultdict(lambda: {
-            "input": 0, "output": 0, "cache_create": 0, "cache_read": 0, "models": set()
+            "input": 0, "output": 0, "cache_create": 0, "cache_read": 0,
+            "models": set(),
+            "by_model": defaultdict(lambda: {"input": 0, "output": 0, "cache_create": 0, "cache_read": 0}),
         })
         for date_str, data in by_date.items():
             month_key = date_str[:7]  # YYYY-MM
@@ -259,16 +373,24 @@ def aggregate_usage(usage_data: dict, period: UsagePeriod) -> list[dict]:
             by_month[month_key]["cache_create"] += data["cache_create"]
             by_month[month_key]["cache_read"] += data["cache_read"]
             by_month[month_key]["models"].update(data.get("models", set()))
+            # Aggregate per-model data
+            for model_name, model_tokens in data.get("by_model", {}).items():
+                by_month[month_key]["by_model"][model_name]["input"] += model_tokens["input"]
+                by_month[month_key]["by_model"][model_name]["output"] += model_tokens["output"]
+                by_month[month_key]["by_model"][model_name]["cache_create"] += model_tokens["cache_create"]
+                by_month[month_key]["by_model"][model_name]["cache_read"] += model_tokens["cache_read"]
 
         result = []
         for month_key in sorted(by_month.keys()):
             data = by_month[month_key]
             models = sorted(data["models"])
             total = data["input"] + data["output"] + data["cache_create"] + data["cache_read"]
+            by_model_data = dict(data.get("by_model", {}))
             cost = calculate_cost(
                 data["input"], data["output"],
                 data["cache_create"], data["cache_read"],
                 data["models"],
+                by_model=by_model_data if by_model_data else None,
             )
             result.append({
                 "date": month_key,
