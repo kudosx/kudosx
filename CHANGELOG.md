@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0 - 2025-12-07
+
+### Added
+
+- `explore` command - k9s-style TUI for browsing skills, agents, commands, and usage
+- Usage view with Daily/Weekly/Monthly period tabs (`d`/`w`/`m`)
+- Token usage tracking from local Claude Code session files
+- Cost calculation with model-specific pricing
+- Current date/week/month highlighting in usage table
+- Spec documentation for all TUI views
+
 ## 0.2.5 - 2025-12-06
 
 ### Fixed
