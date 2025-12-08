@@ -1,4 +1,4 @@
 """Kudosx - An AI software team that builds products with industry standard practices."""
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 __package_name__ = "KudosX"

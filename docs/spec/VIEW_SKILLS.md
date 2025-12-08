@@ -64,9 +64,10 @@ Full-screen TUI (k9s-style) để browse và manage Claude Code skills.
 - [x] LATEST column with remote version
 - [x] Update status detection (installed/available/update)
 - [x] Install/Update action (Enter key)
+- [x] Remote skills.yaml fetching (with local fallback)
 - [ ] Delete action
 
 ## Related Specs
 
-- [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md) - Version management and update functionality
+- [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md) - Version management, remote fetching, and owner sync command
 - [CLI.md](CLI.md) - CLI command reference

@@ -6,18 +6,40 @@ import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 
 import click
 import yaml
 
-# Path to skills registry
+# Path to local bundled skills registry
 SKILLS_YAML = Path(__file__).parent.parent / "repo" / "skills.yaml"
 
+# Remote skills registry URL
+REMOTE_SKILLS_URL = "https://raw.githubusercontent.com/kudosx/kudosx/refs/heads/main/kudosx/repo/skills.yaml"
 
-def load_skills() -> dict:
-    """Load skills from skills.yaml registry."""
+# Cache for loaded skills (to avoid repeated fetches)
+_skills_cache: dict | None = None
+
+
+def load_skills_from_remote() -> dict | None:
+    """Fetch skills from remote skills.yaml.
+
+    Returns:
+        Skills dict or None if fetch fails
+    """
+    try:
+        request = Request(REMOTE_SKILLS_URL, headers={"User-Agent": "kudosx"})
+        with urlopen(request, timeout=5) as response:
+            content = response.read().decode("utf-8")
+            data = yaml.safe_load(content)
+            return data.get("skills", {})
+    except (URLError, HTTPError, yaml.YAMLError, OSError):
+        return None
+
+
+def load_skills_from_local() -> dict:
+    """Load skills from local bundled skills.yaml."""
     if not SKILLS_YAML.exists():
         return {}
     with open(SKILLS_YAML) as f:
@@ -25,7 +47,36 @@ def load_skills() -> dict:
     return data.get("skills", {})
 
 
-# Load skills from YAML registry
+def load_skills() -> dict:
+    """Load skills from remote, fallback to local.
+
+    Returns:
+        Skills dict from remote or local registry
+    """
+    global _skills_cache
+    if _skills_cache is not None:
+        return _skills_cache
+
+    # Try remote first
+    skills = load_skills_from_remote()
+    if skills:
+        _skills_cache = skills
+        return skills
+
+    # Fallback to local
+    skills = load_skills_from_local()
+    _skills_cache = skills
+    return skills
+
+
+def reload_skills() -> dict:
+    """Force reload skills (clear cache and reload)."""
+    global _skills_cache
+    _skills_cache = None
+    return load_skills()
+
+
+# Load skills from registry (remote with local fallback)
 SKILLS = load_skills()
 
 

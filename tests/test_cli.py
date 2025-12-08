@@ -263,3 +263,172 @@ class TestUpdateCommand:
         result = runner.invoke(cli, ["update", "skill-browser-use"])
 
         assert "up-to-date" in result.output
+
+
+class TestRepoCommand:
+    """Tests for the repo command."""
+
+    def test_repo_help(self):
+        """Test repo command help."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["repo", "--help"])
+        assert result.exit_code == 0
+        assert "Repository management" in result.output
+        assert "sync" in result.output
+
+    def test_repo_sync_help(self):
+        """Test repo sync subcommand help."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["repo", "sync", "--help"])
+        assert result.exit_code == 0
+        assert "Sync skill versions" in result.output
+
+    @patch("kudosx.commands.repo.fetch_latest_version_from_git")
+    @patch("kudosx.commands.repo.load_skills_from_local")
+    def test_repo_sync_no_changes(self, mock_load_skills, mock_fetch_version):
+        """Test repo sync when versions are unchanged."""
+        mock_load_skills.return_value = {
+            "skill-test": {
+                "repo": "kudosx/test-skill",
+                "latest": "0.1.0",
+            }
+        }
+        mock_fetch_version.return_value = "0.1.0"
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["repo", "sync"])
+
+        assert result.exit_code == 0
+        assert "unchanged" in result.output
+        assert "No changes to sync" in result.output
+
+    @patch("kudosx.commands.repo.SKILLS_YAML")
+    @patch("kudosx.commands.repo.fetch_latest_version_from_git")
+    @patch("kudosx.commands.repo.load_skills_from_local")
+    def test_repo_sync_with_updates(self, mock_load_skills, mock_fetch_version, mock_yaml_path):
+        """Test repo sync when new versions are available."""
+        mock_load_skills.return_value = {
+            "skill-test": {
+                "repo": "kudosx/test-skill",
+                "latest": "0.1.0",
+            }
+        }
+        mock_fetch_version.return_value = "0.2.0"
+
+        # Mock file writing
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+            mock_yaml_path.__str__ = lambda self: f.name
+            mock_yaml_path.open = lambda mode: open(f.name, mode)
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["repo", "sync"])
+
+        assert result.exit_code == 0
+        assert "0.1.0 → 0.2.0" in result.output
+
+    @patch("kudosx.commands.repo.load_skills_from_local")
+    def test_repo_sync_no_skills(self, mock_load_skills):
+        """Test repo sync when no skills are configured."""
+        mock_load_skills.return_value = {}
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["repo", "sync"])
+
+        assert result.exit_code == 0
+        assert "No skills found" in result.output
+
+    @patch("kudosx.commands.repo.fetch_latest_version_from_git")
+    @patch("kudosx.commands.repo.load_skills_from_local")
+    def test_repo_sync_fetch_failure(self, mock_load_skills, mock_fetch_version):
+        """Test repo sync when git fetch fails."""
+        mock_load_skills.return_value = {
+            "skill-test": {
+                "repo": "kudosx/test-skill",
+                "latest": "0.1.0",
+            }
+        }
+        mock_fetch_version.return_value = None
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["repo", "sync"])
+
+        assert result.exit_code == 0
+        assert "failed to fetch" in result.output
+
+
+class TestRemoteSkillsLoading:
+    """Tests for remote skills.yaml loading."""
+
+    @patch("kudosx.commands.add.urlopen")
+    def test_load_skills_from_remote_success(self, mock_urlopen):
+        """Test successful remote skills loading."""
+        from kudosx.commands.add import load_skills_from_remote
+
+        mock_response = MagicMock()
+        mock_response.read.return_value = b"""
+skills:
+  skill-test:
+    repo: kudosx/test
+    latest: 1.0.0
+"""
+        mock_response.__enter__ = lambda self: self
+        mock_response.__exit__ = lambda self, *args: None
+        mock_urlopen.return_value = mock_response
+
+        result = load_skills_from_remote()
+
+        assert result is not None
+        assert "skill-test" in result
+        assert result["skill-test"]["latest"] == "1.0.0"
+
+    @patch("kudosx.commands.add.urlopen")
+    def test_load_skills_from_remote_failure(self, mock_urlopen):
+        """Test remote skills loading failure falls back gracefully."""
+        from kudosx.commands.add import load_skills_from_remote
+        from urllib.error import URLError
+
+        mock_urlopen.side_effect = URLError("Network error")
+
+        result = load_skills_from_remote()
+
+        assert result is None
+
+    def test_load_skills_from_local(self):
+        """Test local skills loading."""
+        from kudosx.commands.add import load_skills_from_local
+
+        result = load_skills_from_local()
+
+        assert result is not None
+        assert "skill-browser-use" in result
+        assert "skill-cloud-aws" in result
+
+    @patch("kudosx.commands.add.load_skills_from_remote")
+    @patch("kudosx.commands.add.load_skills_from_local")
+    def test_load_skills_prefers_remote(self, mock_local, mock_remote):
+        """Test that load_skills prefers remote over local."""
+        from kudosx.commands.add import load_skills, reload_skills
+
+        mock_remote.return_value = {"skill-remote": {"repo": "test/remote"}}
+        mock_local.return_value = {"skill-local": {"repo": "test/local"}}
+
+        # Force reload to bypass cache
+        result = reload_skills()
+
+        assert "skill-remote" in result
+        mock_remote.assert_called()
+
+    @patch("kudosx.commands.add.load_skills_from_remote")
+    @patch("kudosx.commands.add.load_skills_from_local")
+    def test_load_skills_falls_back_to_local(self, mock_local, mock_remote):
+        """Test that load_skills falls back to local when remote fails."""
+        from kudosx.commands.add import reload_skills
+
+        mock_remote.return_value = None
+        mock_local.return_value = {"skill-local": {"repo": "test/local"}}
+
+        result = reload_skills()
+
+        assert "skill-local" in result
+        mock_local.assert_called()

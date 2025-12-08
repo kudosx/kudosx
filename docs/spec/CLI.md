@@ -33,6 +33,7 @@ kudosx  # Same as kudosx explore
 | `kudosx explore` | TUI for browsing agents, skills, commands, and usage |
 | `kudosx software` | Show industry-standard software project structure |
 | `kudosx cloud` | Show industry-standard cloud project structure |
+| `kudosx repo` | Repository management commands (for maintainers) |
 
 ## Command Reference
 
@@ -233,6 +234,42 @@ kudosx cloud
 kudosx cloud -L 2
 ```
 
+### kudosx repo
+
+Repository management commands for maintainers.
+
+```bash
+kudosx repo <subcommand>
+```
+
+**Subcommands:**
+- `sync` - Sync skill versions from GitHub tags to skills.yaml
+
+#### kudosx repo sync
+
+Fetch latest versions from each skill's GitHub repository and update the local skills.yaml registry.
+
+```bash
+kudosx repo sync
+```
+
+**Actions:**
+1. For each skill in skills.yaml, fetch latest tag via `git ls-remote --tags`
+2. Update the `latest` field in `kudosx/repo/skills.yaml`
+3. Display version changes
+
+**Example output:**
+```
+Syncing skill versions...
+  skill-browser-use: 0.1.0 → 0.1.1
+  skill-cloud-aws: 0.0.3 (unchanged)
+Updated kudosx/repo/skills.yaml
+```
+
+**Note:** This command is for repository maintainers. After running, commit and push the changes so users receive updated versions.
+
+See [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md) for detailed version management spec.
+
 ## Global Options
 
 ```bash
@@ -257,3 +294,4 @@ kudosx --help     # Show help
 - [x] explore command (TUI)
 - [x] software command
 - [x] cloud command
+- [x] repo command (sync)
