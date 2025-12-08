@@ -172,3 +172,94 @@ class TestSoftwareCommand:
         result = runner.invoke(cli, ["software"])
         assert result.exit_code == 1
         assert "Template not found" in result.output
+
+
+class TestUpdateCommand:
+    """Tests for the update command."""
+
+    def test_update_help(self):
+        """Test update command help."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update", "--help"])
+        assert result.exit_code == 0
+        assert "Update installed skills" in result.output
+        assert "--all" in result.output
+        assert "--local" in result.output
+
+    def test_update_requires_name_or_all(self):
+        """Test update command requires name or --all flag."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update"])
+        assert result.exit_code == 1
+        assert "Specify a skill name or use --all" in result.output
+
+    def test_update_unknown_skill(self):
+        """Test update command with unknown skill."""
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update", "unknown-skill"])
+        assert result.exit_code == 1
+        assert "Unknown skill" in result.output
+
+    @patch("kudosx.commands.update.get_installed_skills")
+    def test_update_all_no_skills(self, mock_get_installed):
+        """Test update --all when no skills installed."""
+        mock_get_installed.return_value = []
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update", "--all"])
+        assert result.exit_code == 0
+        assert "No skills installed" in result.output
+
+    @patch("kudosx.commands.update.Path")
+    def test_update_skill_not_installed(self, mock_path):
+        """Test update specific skill when not installed."""
+        mock_path.home.return_value = MagicMock()
+        mock_path.home.return_value.__truediv__ = lambda self, x: MagicMock(
+            __truediv__=lambda self, x: MagicMock(
+                __truediv__=lambda self, x: MagicMock(exists=lambda: False)
+            )
+        )
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update", "skill-browser-use"])
+        assert result.exit_code == 1
+        assert "not installed" in result.output
+
+    @patch("kudosx.commands.update.get_latest_version")
+    @patch("kudosx.commands.update.download_and_extract_skill")
+    @patch("kudosx.commands.update.get_installed_version")
+    @patch("kudosx.commands.update.Path")
+    def test_update_skill_success(
+        self, mock_path, mock_get_installed, mock_download, mock_get_latest
+    ):
+        """Test successful skill update."""
+        # Mock path to exist
+        mock_skill_path = MagicMock()
+        mock_skill_path.exists.return_value = True
+        mock_path.home.return_value.__truediv__.return_value.__truediv__.return_value.__truediv__.return_value = mock_skill_path
+
+        mock_get_installed.return_value = "v1.0.0"
+        mock_get_latest.return_value = "v1.1.0"
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update", "skill-browser-use"])
+
+        # Should attempt to download and extract
+        assert mock_get_latest.called
+
+    @patch("kudosx.commands.update.get_latest_version")
+    @patch("kudosx.commands.update.get_installed_version")
+    @patch("kudosx.commands.update.Path")
+    def test_update_skill_already_up_to_date(
+        self, mock_path, mock_get_installed, mock_get_latest
+    ):
+        """Test update when skill is already up-to-date."""
+        mock_skill_path = MagicMock()
+        mock_skill_path.exists.return_value = True
+        mock_path.home.return_value.__truediv__.return_value.__truediv__.return_value.__truediv__.return_value = mock_skill_path
+
+        mock_get_installed.return_value = "v1.0.0"
+        mock_get_latest.return_value = "v1.0.0"
+
+        runner = CliRunner()
+        result = runner.invoke(cli, ["update", "skill-browser-use"])
+
+        assert "up-to-date" in result.output

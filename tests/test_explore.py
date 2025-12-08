@@ -205,6 +205,7 @@ class TestExploreTUI:
         assert "r" in binding_keys
         assert "?" in binding_keys
         assert "u" in binding_keys
+        assert "enter" in binding_keys
 
     def test_tui_has_css(self):
         """Test TUI has CSS defined."""
@@ -223,6 +224,57 @@ class TestExploreTUI:
         """Test TUI initializes with empty skills_data."""
         app = ExploreTUI()
         assert app.skills_data == []
+        assert app._latest_versions is None
+
+    def test_get_skill_status_available(self):
+        """Test status is 'available' when not installed."""
+        app = ExploreTUI()
+        status = app._get_skill_status(None, None, "v1.0.0")
+        assert "available" in status
+
+    def test_get_skill_status_installed_up_to_date(self):
+        """Test status is 'installed' when version matches latest."""
+        app = ExploreTUI()
+        status = app._get_skill_status("v1.0.0", None, "v1.0.0")
+        assert "installed" in status
+        assert "green" in status
+
+    def test_get_skill_status_update_available(self):
+        """Test status is 'update' when newer version available."""
+        app = ExploreTUI()
+        status = app._get_skill_status("v1.0.0", None, "v1.1.0")
+        assert "update" in status
+        assert "yellow" in status
+
+    def test_get_skill_status_no_latest(self):
+        """Test status is 'installed' when can't check latest."""
+        app = ExploreTUI()
+        status = app._get_skill_status("v1.0.0", None, None)
+        assert "installed" in status
+
+    def test_get_skill_status_installed_newer_than_latest(self):
+        """Test status is 'installed' when installed is newer than latest."""
+        app = ExploreTUI()
+        status = app._get_skill_status("v2.0.0", None, "v1.0.0")
+        assert "installed" in status
+        assert "green" in status
+
+    def test_get_skill_status_semantic_version_comparison(self):
+        """Test semantic version comparison works correctly."""
+        app = ExploreTUI()
+        # v1.0.0 vs v1.0.1 - patch update
+        status = app._get_skill_status("v1.0.0", None, "v1.0.1")
+        assert "update" in status
+
+        # v1.9.0 vs v1.10.0 - minor update (10 > 9 numerically)
+        status = app._get_skill_status("v1.9.0", None, "v1.10.0")
+        assert "update" in status
+
+    def test_get_skill_status_local_version_used(self):
+        """Test local version is used when global is None."""
+        app = ExploreTUI()
+        status = app._get_skill_status(None, "v1.0.0", "v1.1.0")
+        assert "update" in status
 
 
 @pytest.mark.asyncio(loop_scope="class")
@@ -250,6 +302,14 @@ class TestExploreTUIAsync:
             table = app.query_one("#data-table")
             assert table is not None
             assert table.border_title == "Skills"
+
+    async def test_tui_skills_has_latest_column(self):
+        """Test skills table has LATEST column."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            table = app.query_one("#data-table")
+            columns = [col.label.plain for col in table.columns.values()]
+            assert "LATEST" in columns
 
     async def test_tui_has_explorer_tabs(self):
         """Test TUI displays explorer tabs."""

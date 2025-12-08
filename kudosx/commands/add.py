@@ -1,48 +1,121 @@
 """Add command for Kudosx CLI - Install skills and extensions."""
 
-import json
+import re
 import shutil
+import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
 
 import click
+import yaml
+
+# Path to skills registry
+SKILLS_YAML = Path(__file__).parent.parent / "repo" / "skills.yaml"
+
+
+def load_skills() -> dict:
+    """Load skills from skills.yaml registry."""
+    if not SKILLS_YAML.exists():
+        return {}
+    with open(SKILLS_YAML) as f:
+        data = yaml.safe_load(f)
+    return data.get("skills", {})
+
+
+# Load skills from YAML registry
+SKILLS = load_skills()
+
+
+def parse_version(tag: str) -> tuple[int, ...]:
+    """Parse a version tag into a tuple of integers for comparison.
+
+    Args:
+        tag: Version tag (e.g., "v0.1.0", "0.1.0", "v1.2.3-beta")
+
+    Returns:
+        Tuple of integers for comparison (e.g., (0, 1, 0))
+    """
+    # Remove 'v' prefix and any suffix like -beta, -rc1
+    version_str = re.sub(r"^v", "", tag)
+    version_str = re.sub(r"[-+].*$", "", version_str)
+
+    # Extract numbers
+    parts = re.findall(r"\d+", version_str)
+    return tuple(int(p) for p in parts) if parts else (0,)
 
 
 def get_latest_version(repo: str) -> str | None:
-    """Fetch the latest release version from GitHub API.
+    """Get the latest version for a skill.
+
+    First checks skills.yaml registry, then falls back to git ls-remote.
 
     Args:
         repo: GitHub repo in format "owner/repo"
 
     Returns:
-        Version string (e.g., "v0.1.0") or None if not found
+        Version string (e.g., "0.1.0") or None if not found
     """
-    api_url = f"https://api.github.com/repos/{repo}/releases/latest"
+    # First, check skills.yaml for cached latest version
+    for skill_config in SKILLS.values():
+        if skill_config.get("repo") == repo:
+            latest = skill_config.get("latest")
+            if latest:
+                return str(latest)
+            break
+
+    # Fallback to git ls-remote
+    return fetch_latest_version_from_git(repo)
+
+
+def fetch_latest_version_from_git(repo: str) -> str | None:
+    """Fetch the latest version tag from GitHub using git ls-remote.
+
+    Uses git ls-remote instead of GitHub API to avoid rate limiting.
+
+    Args:
+        repo: GitHub repo in format "owner/repo"
+
+    Returns:
+        Version string (e.g., "0.1.0") or None if not found
+    """
+    repo_url = f"https://github.com/{repo}.git"
     try:
-        request = Request(api_url, headers={"Accept": "application/vnd.github.v3+json"})
-        with urlopen(request, timeout=10) as response:
-            data = json.loads(response.read().decode())
-            return data.get("tag_name")
-    except (URLError, HTTPError, json.JSONDecodeError):
+        result = subprocess.run(
+            ["git", "ls-remote", "--tags", repo_url],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode != 0:
+            return None
+
+        # Parse tags from output: "sha\trefs/tags/v0.1.0"
+        tags = []
+        for line in result.stdout.strip().split("\n"):
+            if not line:
+                continue
+            parts = line.split("\t")
+            if len(parts) == 2:
+                ref = parts[1]
+                # Skip ^{} dereferenced tags
+                if ref.endswith("^{}"):
+                    continue
+                tag = ref.replace("refs/tags/", "")
+                tags.append(tag)
+
+        if not tags:
+            return None
+
+        # Sort by semantic version and return latest
+        tags.sort(key=parse_version, reverse=True)
+        latest = tags[0]
+        # Strip 'v' prefix if present
+        return latest[1:] if latest.startswith("v") else latest
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         return None
-
-
-# Mapping of skill names to their GitHub repos and target directories
-SKILLS = {
-    "skill-browser-use": {
-        "repo": "kudosx/claude-skill-browser-use",
-        "source_path": ".claude/skills/browser-use",  # Path within repo to extract
-        "target_dir": "browser-use",  # Target folder name in ~/.claude/skills/
-    },
-    "skill-cloud-aws": {
-        "repo": "kudosx/claude-skill-cloud-aws",
-        "source_path": ".claude/skills/cloud-aws",
-        "target_dir": "cloud-aws",
-    },
-}
 
 
 def download_and_extract_skill(

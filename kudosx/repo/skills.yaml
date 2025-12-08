@@ -1,0 +1,14 @@
+skills:
+  skill-browser-use:
+    repo: kudosx/claude-skill-browser-use
+    source_path: .claude/skills/browser-use
+    target_dir: browser-use
+    latest: 0.1.1
+    description: Browser automation skill
+
+  skill-cloud-aws:
+    repo: kudosx/claude-skill-cloud-aws
+    source_path: .claude/skills/cloud-aws
+    target_dir: cloud-aws
+    latest: 0.0.3
+    description: AWS cloud management skill

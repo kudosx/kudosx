@@ -14,7 +14,7 @@ from textual.reactive import reactive
 from textual.widgets import DataTable, Footer, Static
 from textual.worker import Worker
 
-from kudosx.commands.add import SKILLS
+from kudosx.commands.add import SKILLS, get_latest_version, download_and_extract_skill
 from kudosx import __version__, __package_name__
 from kudosx.utils.claude_usage import (
     get_claude_usage as get_usage_from_sessions,
@@ -22,6 +22,7 @@ from kudosx.utils.claude_usage import (
     aggregate_usage,
     calculate_totals,
 )
+from kudosx.utils.version import is_update_available, format_version
 
 # Claude Code built-in agents
 AGENTS = [
@@ -259,6 +260,7 @@ class ExploreTUI(App):
         Binding("q", "quit", "Quit"),
         Binding("r", "refresh", "Refresh"),
         Binding("?", "help", "Help"),
+        Binding("enter", "install_update", "Install/Update", show=False),
     ]
 
     current_view: reactive[str] = reactive("skills")
@@ -271,6 +273,7 @@ class ExploreTUI(App):
         self.commands_data = []
         self.usage_data = []
         self._cached_usage: dict | None = None
+        self._latest_versions: dict | None = None
 
     def compose(self) -> ComposeResult:
         with Horizontal(id="header"):
@@ -314,6 +317,7 @@ class ExploreTUI(App):
         table.add_column("STATUS", width=12)
         table.add_column("GLOBAL", width=10)
         table.add_column("LOCAL", width=10)
+        table.add_column("LATEST", width=10)
         table.add_column(" ", width=500)  # Spacer fills remaining width
 
         global_base = Path.home() / ".claude" / "skills"
@@ -329,29 +333,55 @@ class ExploreTUI(App):
             global_installed = global_path.exists()
             local_installed = local_path.exists()
 
-            if global_installed or local_installed:
-                status = "[green]installed[/green]"
-            else:
-                status = "[dim]available[/dim]"
+            global_ver = get_installed_version(global_path) if global_installed else None
+            local_ver = get_installed_version(local_path) if local_installed else None
+            latest_ver = self._latest_versions.get(skill_name) if self._latest_versions else None
 
-            global_ver = get_installed_version(global_path) if global_installed else "-"
-            local_ver = get_installed_version(local_path) if local_installed else "-"
+            # Determine status based on installed vs latest
+            status = self._get_skill_status(global_ver, local_ver, latest_ver)
 
             self.skills_data.append({
                 "name": skill_name,
+                "config": config,
                 "global_path": global_path,
                 "local_path": local_path,
+                "global_ver": global_ver,
+                "local_ver": local_ver,
+                "latest_ver": latest_ver,
             })
 
             table.add_row(
                 skill_name,
                 status,
-                f"[green]{global_ver}[/green]" if global_ver != "-" else "[dim]-[/dim]",
-                f"[cyan]{local_ver}[/cyan]" if local_ver != "-" else "[dim]-[/dim]",
+                f"[green]{global_ver}[/green]" if global_ver else "[dim]-[/dim]",
+                f"[cyan]{local_ver}[/cyan]" if local_ver else "[dim]-[/dim]",
+                f"[#d77757]{latest_ver}[/]" if latest_ver else "[dim]...[/dim]",
                 " ",  # Spacer
             )
 
         table.cursor_type = "row"
+
+        # Fetch latest versions in background if not cached
+        if not self._latest_versions:
+            self.run_worker(self._fetch_latest_versions, thread=True, name="_fetch_latest_versions")
+
+    def _get_skill_status(self, global_ver: str | None, local_ver: str | None, latest_ver: str | None) -> str:
+        """Determine skill status based on versions using semantic version comparison."""
+        installed_ver = global_ver or local_ver
+        if not installed_ver:
+            return "[dim]available[/dim]"
+        if not latest_ver:
+            return "[green]installed[/green]"  # Can't check, assume OK
+        if is_update_available(installed_ver, latest_ver):
+            return "[yellow]update[/yellow]"
+        return "[green]installed[/green]"
+
+    def _fetch_latest_versions(self) -> dict:
+        """Fetch latest versions from GitHub in background."""
+        versions = {}
+        for skill_name, config in SKILLS.items():
+            versions[skill_name] = get_latest_version(config["repo"])
+        return versions
 
     def load_agents(self) -> None:
         """Load agents data into the table."""
@@ -472,7 +502,7 @@ class ExploreTUI(App):
         if self._cached_usage:
             self._update_usage_table(self._cached_usage)
         else:
-            self.run_worker(self._fetch_usage, thread=True)
+            self.run_worker(self._fetch_usage, thread=True, name="_fetch_usage")
 
     def _fetch_usage(self) -> dict:
         """Fetch usage data in background thread."""
@@ -480,9 +510,23 @@ class ExploreTUI(App):
 
     def on_worker_state_changed(self, event: Worker.StateChanged) -> None:
         """Handle worker completion."""
-        if event.state.name == "SUCCESS" and event.worker.name == "_fetch_usage":
-            self._cached_usage = event.worker.result
-            self._update_usage_table(event.worker.result)
+        if event.state.name == "SUCCESS":
+            if event.worker.name == "_fetch_usage":
+                self._cached_usage = event.worker.result
+                self._update_usage_table(event.worker.result)
+            elif event.worker.name == "_fetch_latest_versions":
+                self._latest_versions = event.worker.result
+                # Refresh skills table with latest versions
+                if self.current_view == "skills":
+                    self.load_skills()
+            elif event.worker.name.startswith("install_"):
+                success, result = event.worker.result
+                skill_name = event.worker.name.replace("install_", "")
+                if success:
+                    self.notify(f"Installed {skill_name} to {result}", severity="information")
+                    self.load_skills()  # Refresh to show new version
+                else:
+                    self.notify(f"Failed to install {skill_name}: {result}", severity="error")
 
     def _update_usage_table(self, usage_data: dict) -> None:
         """Update usage table with fetched data."""
@@ -594,6 +638,8 @@ class ExploreTUI(App):
         """Refresh the current view."""
         if self.current_view == "usage":
             self._cached_usage = None  # Clear cache on refresh
+        elif self.current_view == "skills":
+            self._latest_versions = None  # Clear cache to re-fetch latest versions
         if self.current_view == "agents":
             self.load_agents()
         elif self.current_view == "commands":
@@ -609,8 +655,47 @@ class ExploreTUI(App):
         if self.current_view == "usage":
             msg = "a/k/c/u: Switch view | d/w/m: Period | q: Quit | r: Refresh"
         else:
-            msg = "a/k/c/u: Switch view | q: Quit | r: Refresh | Enter: Select | d: Delete"
+            msg = "a/k/c/u: Switch view | q: Quit | r: Refresh | Enter: Install/Update | d: Delete"
         self.notify(msg, title="Keyboard Shortcuts", severity="information")
+
+    def action_install_update(self) -> None:
+        """Install or update the selected skill."""
+        if self.current_view != "skills":
+            return
+
+        table = self.query_one("#data-table", DataTable)
+        if table.cursor_row is None or table.cursor_row >= len(self.skills_data):
+            return
+
+        skill = self.skills_data[table.cursor_row]
+        skill_name = skill["name"]
+        config = skill["config"]
+        latest_ver = skill.get("latest_ver")
+
+        # Determine target path (prefer global)
+        target_path = skill["global_path"]
+
+        self.notify(f"Installing {skill_name}...", severity="information")
+
+        # Run installation in background
+        self.run_worker(
+            lambda: self._do_install_skill(config, target_path, latest_ver),
+            thread=True,
+            name=f"install_{skill_name}",
+        )
+
+    def _do_install_skill(self, config: dict, target_path: Path, version: str | None) -> tuple[bool, str]:
+        """Perform skill installation in background thread."""
+        try:
+            download_and_extract_skill(
+                repo=config["repo"],
+                source_path=config["source_path"],
+                target_path=target_path,
+                version=version,
+            )
+            return True, str(target_path)
+        except Exception as e:
+            return False, str(e)
 
 
 def run_tui():

@@ -26,6 +26,7 @@ kudosx  # Same as kudosx explore
 |---------|-------------|
 | `kudosx add` | Install a skill to Claude Code |
 | `kudosx remove` | Uninstall a skill from Claude Code |
+| `kudosx update` | Update installed skills to latest version |
 | `kudosx list` | List installed commands and skills |
 | `kudosx search` | Search for files or content in codebase |
 | `kudosx init` | Initialize a new Kudosx project |
@@ -80,6 +81,30 @@ kudosx remove <name> [--local]
 kudosx remove skill-browser-use
 kudosx remove skill-browser-use --local
 ```
+
+### kudosx update
+
+Update installed skills to the latest version from remote repository.
+
+```bash
+kudosx update [name] [--all] [--local]
+```
+
+**Arguments:**
+- `name` - Skill name to update (optional if --all)
+
+**Options:**
+- `-a, --all` - Update all installed skills
+- `-l, --local` - Update local skills (./.claude/skills) instead of global (~/.claude/skills)
+
+**Examples:**
+```bash
+kudosx update skill-browser-use       # Update specific skill
+kudosx update --all                    # Update all global skills
+kudosx update --all --local            # Update all local skills
+```
+
+See [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md) for detailed version management spec.
 
 ### kudosx list
 
@@ -225,6 +250,7 @@ kudosx --help     # Show help
 
 - [x] add command
 - [x] remove command
+- [x] update command
 - [x] list command
 - [x] search command
 - [x] init command

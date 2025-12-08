@@ -11,6 +11,7 @@ from kudosx.commands.list import list_skills
 from kudosx.commands.remove import remove
 from kudosx.commands.search import search
 from kudosx.commands.software import software
+from kudosx.commands.update import update
 
 
 @click.group(invoke_without_command=True)
@@ -31,6 +32,7 @@ cli.add_command(list_skills)
 cli.add_command(remove)
 cli.add_command(search)
 cli.add_command(software)
+cli.add_command(update)
 
 
 def main():
