@@ -527,6 +527,14 @@ class ExploreTUI(App):
                     self.load_skills()  # Refresh to show new version
                 else:
                     self.notify(f"Failed to install {skill_name}: {result}", severity="error")
+            elif event.worker.name.startswith("delete_"):
+                success, result = event.worker.result
+                skill_name = event.worker.name.replace("delete_", "")
+                if success:
+                    self.notify(f"Deleted {skill_name}", severity="information")
+                    self.load_skills()  # Refresh to show updated status
+                else:
+                    self.notify(f"Failed to delete {skill_name}: {result}", severity="error")
 
     def _update_usage_table(self, usage_data: dict) -> None:
         """Update usage table with fetched data."""
@@ -620,9 +628,11 @@ class ExploreTUI(App):
         self.load_usage()
 
     def action_usage_daily(self) -> None:
-        """Switch to daily usage view."""
+        """Switch to daily usage view or delete skill."""
         if self.current_view == "usage":
             self.load_usage("daily")
+        elif self.current_view == "skills":
+            self.action_delete_skill()
 
     def action_usage_weekly(self) -> None:
         """Switch to weekly usage view."""
@@ -693,6 +703,54 @@ class ExploreTUI(App):
                 target_path=target_path,
                 version=version,
             )
+            return True, str(target_path)
+        except Exception as e:
+            return False, str(e)
+
+    def action_delete_skill(self) -> None:
+        """Delete the selected skill."""
+        if self.current_view != "skills":
+            return
+
+        table = self.query_one("#data-table", DataTable)
+        if table.cursor_row is None or table.cursor_row >= len(self.skills_data):
+            return
+
+        skill = self.skills_data[table.cursor_row]
+        skill_name = skill["name"]
+        global_path = skill["global_path"]
+        local_path = skill["local_path"]
+
+        # Check if skill is installed
+        global_installed = global_path.exists()
+        local_installed = local_path.exists()
+
+        if not global_installed and not local_installed:
+            self.notify(f"{skill_name} is not installed", severity="warning")
+            return
+
+        # Prefer deleting global, then local
+        if global_installed:
+            target_path = global_path
+            location = "global"
+        else:
+            target_path = local_path
+            location = "local"
+
+        self.notify(f"Deleting {skill_name} ({location})...", severity="information")
+
+        # Run deletion in background
+        self.run_worker(
+            lambda: self._do_delete_skill(target_path),
+            thread=True,
+            name=f"delete_{skill_name}",
+        )
+
+    def _do_delete_skill(self, target_path: Path) -> tuple[bool, str]:
+        """Perform skill deletion in background thread."""
+        import shutil
+        try:
+            shutil.rmtree(target_path)
             return True, str(target_path)
         except Exception as e:
             return False, str(e)

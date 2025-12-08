@@ -39,7 +39,7 @@ Full-screen TUI (k9s-style) để browse và manage Claude Code skills.
 - `r` - Refresh danh sách skills (fetch latest versions)
 - `?` - Hiển thị help
 - `Enter` - Install/Update skill
-- `d` - Delete skill (TODO)
+- `d` - Delete skill (removes from global ~/.claude/skills)
 
 ### Styling
 
@@ -65,7 +65,7 @@ Full-screen TUI (k9s-style) để browse và manage Claude Code skills.
 - [x] Update status detection (installed/available/update)
 - [x] Install/Update action (Enter key)
 - [x] Remote skills.yaml fetching (with local fallback)
-- [ ] Delete action
+- [x] Delete action (d key)
 
 ## Related Specs
 

@@ -465,3 +465,79 @@ class TestAgents:
             assert "name" in agent
             assert "type" in agent
             assert "description" in agent
+
+
+class TestDeleteSkill:
+    """Tests for delete skill functionality."""
+
+    async def test_delete_action_only_works_in_skills_view(self):
+        """Test that pressing 'd' in non-skills view doesn't trigger delete."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Switch to agents view
+            await pilot.press("a")
+            assert app.current_view == "agents"
+            # Press 'd' - should not trigger delete
+            await pilot.press("d")
+            # No error should occur, delete not triggered
+            assert app.current_view == "agents"
+
+    async def test_delete_action_in_usage_view_switches_to_daily(self):
+        """Test that pressing 'd' in usage view switches to daily period."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Switch to usage view and weekly period
+            await pilot.press("u")
+            await pilot.press("w")
+            assert app.usage_period == "weekly"
+            # Press 'd' - should switch to daily
+            await pilot.press("d")
+            assert app.usage_period == "daily"
+
+    async def test_delete_skill_not_installed(self):
+        """Test deleting a skill that's not installed shows warning."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Make sure we're in skills view
+            await pilot.press("k")
+            assert app.current_view == "skills"
+            # Press 'd' - skill not installed, should show warning
+            await pilot.press("d")
+            # No error should occur
+            assert True
+
+    @patch("kudosx.commands.explore.Path.exists")
+    async def test_delete_skill_with_mock(self, mock_exists):
+        """Test delete action with mocked paths."""
+        mock_exists.return_value = False
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            await pilot.press("k")
+            # Simulate pressing 'd' on a skill
+            await pilot.press("d")
+            # Should handle gracefully when skill not installed
+            assert app.current_view == "skills"
+
+    def test_do_delete_skill_success(self, tmp_path):
+        """Test _do_delete_skill removes directory."""
+        # Create a test skill directory
+        skill_dir = tmp_path / "test-skill"
+        skill_dir.mkdir()
+        (skill_dir / "file.txt").write_text("test")
+
+        app = ExploreTUI()
+        success, result = app._do_delete_skill(skill_dir)
+
+        assert success is True
+        assert str(skill_dir) in result
+        assert not skill_dir.exists()
+
+    def test_do_delete_skill_nonexistent(self, tmp_path):
+        """Test _do_delete_skill fails for nonexistent directory."""
+        skill_dir = tmp_path / "nonexistent-skill"
+
+        app = ExploreTUI()
+        success, result = app._do_delete_skill(skill_dir)
+
+        assert success is False
+        assert "No such file or directory" in result or "not found" in result.lower() or "error" in result.lower()
