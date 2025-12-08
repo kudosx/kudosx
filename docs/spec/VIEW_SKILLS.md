@@ -38,8 +38,21 @@ Full-screen TUI (k9s-style) để browse và manage Claude Code skills.
 - `q` - Quit
 - `r` - Refresh danh sách skills (fetch latest versions)
 - `?` - Hiển thị help
-- `Enter` - Install/Update skill
+- `Enter` - Install/Update skill (shows location selection popup)
+- `g` - Install/Update skill to global (~/.claude/skills) - quick action
+- `l` - Install/Update skill to local (./.claude/skills) - quick action
 - `d` - Delete skill (removes from global ~/.claude/skills)
+
+### Install Location Selection
+
+When pressing `Enter` on a skill, a popup appears to select installation location:
+
+| Option | Path | Description |
+|--------|------|-------------|
+| Global | ~/.claude/skills | Available to all projects |
+| Local | ./.claude/skills | Only for current project |
+
+Quick install shortcuts (`g` and `l`) bypass the popup and install directly to the selected location.
 
 ### Styling
 
@@ -66,6 +79,8 @@ Full-screen TUI (k9s-style) để browse và manage Claude Code skills.
 - [x] Install/Update action (Enter key)
 - [x] Remote skills.yaml fetching (with local fallback)
 - [x] Delete action (d key)
+- [x] Install location selection (global/local popup)
+- [x] Quick install shortcuts (g for global, l for local)
 
 ## Related Specs
 

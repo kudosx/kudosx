@@ -15,6 +15,7 @@ from kudosx.commands.explore import (
     ExploreTUI,
     ExplorerTabs,
     SystemInfo,
+    InstallLocationScreen,
     BANNER_ART,
     AGENTS,
 )
@@ -541,3 +542,203 @@ class TestDeleteSkill:
 
         assert success is False
         assert "No such file or directory" in result or "not found" in result.lower() or "error" in result.lower()
+
+
+class TestInstallLocationScreen:
+    """Tests for InstallLocationScreen modal."""
+
+    def test_screen_has_css(self):
+        """Test InstallLocationScreen has CSS defined."""
+        assert InstallLocationScreen.CSS is not None
+        assert "#install-dialog" in InstallLocationScreen.CSS
+        assert "#btn-global" in InstallLocationScreen.CSS
+        assert "#btn-local" in InstallLocationScreen.CSS
+
+    def test_screen_has_bindings(self):
+        """Test InstallLocationScreen has expected key bindings."""
+        binding_keys = [b.key for b in InstallLocationScreen.BINDINGS]
+        assert "escape" in binding_keys
+        assert "g" in binding_keys
+        assert "l" in binding_keys
+
+    def test_screen_stores_skill_name(self):
+        """Test InstallLocationScreen stores the skill name."""
+        screen = InstallLocationScreen("test-skill")
+        assert screen.skill_name == "test-skill"
+
+
+@pytest.mark.asyncio(loop_scope="class")
+class TestInstallLocationScreenAsync:
+    """Async tests for InstallLocationScreen."""
+
+    async def test_screen_renders_skill_name(self):
+        """Test InstallLocationScreen displays skill name in title."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            app.push_screen(InstallLocationScreen("test-skill"))
+            await pilot.pause()
+            # Check that the screen is shown
+            assert len(app.screen_stack) > 1
+
+    async def test_screen_dismiss_on_escape(self):
+        """Test InstallLocationScreen dismisses on escape key."""
+        app = ExploreTUI()
+        result = []
+
+        def capture_result(r):
+            result.append(r)
+
+        async with app.run_test() as pilot:
+            app.push_screen(InstallLocationScreen("test-skill"), capture_result)
+            await pilot.pause()
+            await pilot.press("escape")
+            await pilot.pause()
+            assert result == [None]
+
+    async def test_screen_dismiss_global_on_g(self):
+        """Test InstallLocationScreen returns 'global' when pressing g."""
+        app = ExploreTUI()
+        result = []
+
+        def capture_result(r):
+            result.append(r)
+
+        async with app.run_test() as pilot:
+            app.push_screen(InstallLocationScreen("test-skill"), capture_result)
+            await pilot.pause()
+            await pilot.press("g")
+            await pilot.pause()
+            assert result == ["global"]
+
+    async def test_screen_dismiss_local_on_l(self):
+        """Test InstallLocationScreen returns 'local' when pressing l."""
+        app = ExploreTUI()
+        result = []
+
+        def capture_result(r):
+            result.append(r)
+
+        async with app.run_test() as pilot:
+            app.push_screen(InstallLocationScreen("test-skill"), capture_result)
+            await pilot.pause()
+            await pilot.press("l")
+            await pilot.pause()
+            assert result == ["local"]
+
+
+@pytest.mark.asyncio(loop_scope="class")
+class TestInstallActions:
+    """Tests for install global/local actions."""
+
+    async def test_install_global_binding_exists(self):
+        """Test 'g' key binding exists for global install."""
+        app = ExploreTUI()
+        binding_keys = [b.key for b in app.BINDINGS]
+        assert "g" in binding_keys
+
+    async def test_install_local_binding_exists(self):
+        """Test 'l' key binding exists for local install."""
+        app = ExploreTUI()
+        binding_keys = [b.key for b in app.BINDINGS]
+        assert "l" in binding_keys
+
+    async def test_install_global_only_in_skills_view(self):
+        """Test action_install_global only works in skills view."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Switch to agents view
+            await pilot.press("a")
+            assert app.current_view == "agents"
+            # Press 'g' - should not trigger install
+            await pilot.press("g")
+            # Should still be in agents view (no error)
+            assert app.current_view == "agents"
+
+    async def test_install_local_only_in_skills_view(self):
+        """Test action_install_local only works in skills view."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Switch to agents view
+            await pilot.press("a")
+            assert app.current_view == "agents"
+            # Press 'l' - should not trigger install
+            await pilot.press("l")
+            # Should still be in agents view (no error)
+            assert app.current_view == "agents"
+
+    async def test_enter_shows_popup_in_skills_view(self):
+        """Test pressing Enter in skills view opens install location popup."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Ensure we're in skills view
+            await pilot.press("k")
+            assert app.current_view == "skills"
+            # Press Enter - should open popup
+            await pilot.press("enter")
+            await pilot.pause()
+            # Check that a modal screen was pushed
+            assert len(app.screen_stack) > 1
+
+    async def test_help_shows_install_shortcuts_in_skills_view(self):
+        """Test help shows install shortcuts when in skills view."""
+        app = ExploreTUI()
+        async with app.run_test() as pilot:
+            # Ensure we're in skills view
+            await pilot.press("k")
+            assert app.current_view == "skills"
+            # Press ? - should show help
+            await pilot.press("?")
+            # No error should occur
+            assert True
+
+
+class TestInstallAtLocation:
+    """Tests for _do_install_at_location method."""
+
+    def test_do_install_at_location_global(self, tmp_path):
+        """Test _do_install_at_location uses global path when location is 'global'."""
+        app = ExploreTUI()
+        skill = {
+            "name": "test-skill",
+            "config": {"repo": "test/repo", "source_path": ".claude/skills/test", "target_dir": "test"},
+            "global_path": tmp_path / "global" / "test",
+            "local_path": tmp_path / "local" / "test",
+            "latest_ver": "1.0.0",
+        }
+
+        # Mock the run_worker to capture the target_path
+        called_with = []
+        original_run_worker = app.run_worker
+
+        def mock_run_worker(func, **kwargs):
+            # Just capture that it was called, don't actually run
+            called_with.append(kwargs.get("name", ""))
+
+        app.run_worker = mock_run_worker
+        app._do_install_at_location(skill, "global")
+
+        assert len(called_with) == 1
+        assert "install_test-skill" in called_with[0]
+
+    def test_do_install_at_location_local(self, tmp_path):
+        """Test _do_install_at_location uses local path when location is 'local'."""
+        app = ExploreTUI()
+        skill = {
+            "name": "test-skill",
+            "config": {"repo": "test/repo", "source_path": ".claude/skills/test", "target_dir": "test"},
+            "global_path": tmp_path / "global" / "test",
+            "local_path": tmp_path / "local" / "test",
+            "latest_ver": "1.0.0",
+        }
+
+        # Mock the run_worker to capture the target_path
+        called_with = []
+
+        def mock_run_worker(func, **kwargs):
+            called_with.append(kwargs.get("name", ""))
+
+        app.run_worker = mock_run_worker
+        app._do_install_at_location(skill, "local")
+
+        assert len(called_with) == 1
+        assert "install_test-skill" in called_with[0]

@@ -9,9 +9,10 @@ from pathlib import Path
 import click
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical, Center
 from textual.reactive import reactive
-from textual.widgets import DataTable, Footer, Static
+from textual.screen import ModalScreen
+from textual.widgets import Button, DataTable, Footer, Static
 from textual.worker import Worker
 
 from kudosx.commands.add import SKILLS, get_latest_version, download_and_extract_skill
@@ -150,6 +151,97 @@ class UsagePeriodTabs(Static):
         return "  ".join(parts)
 
 
+class InstallLocationScreen(ModalScreen):
+    """Modal screen for selecting install location (global/local)."""
+
+    CSS = """
+    InstallLocationScreen {
+        align: center middle;
+    }
+
+    #install-dialog {
+        width: 50;
+        height: auto;
+        padding: 1 2;
+        background: #2d2d2d;
+        border: solid #d77757;
+    }
+
+    #install-dialog-title {
+        text-align: center;
+        text-style: bold;
+        color: #d77757;
+        margin-bottom: 1;
+    }
+
+    #install-dialog-subtitle {
+        text-align: center;
+        color: #888888;
+        margin-bottom: 1;
+    }
+
+    .install-button {
+        width: 100%;
+        margin: 1 0;
+    }
+
+    .install-button:focus {
+        background: #d77757;
+    }
+
+    #btn-global {
+        background: #3d6d3d;
+    }
+
+    #btn-local {
+        background: #3d5d6d;
+    }
+
+    #btn-cancel {
+        background: #4d4d4d;
+    }
+    """
+
+    BINDINGS = [
+        Binding("escape", "cancel", "Cancel"),
+        Binding("g", "select_global", "Global", show=False),
+        Binding("l", "select_local", "Local", show=False),
+    ]
+
+    def __init__(self, skill_name: str):
+        super().__init__()
+        self.skill_name = skill_name
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id="install-dialog"):
+            yield Static(f"Install {self.skill_name}", id="install-dialog-title")
+            yield Static("Select installation location", id="install-dialog-subtitle")
+            yield Button("[g] Global (~/.claude/skills)", id="btn-global", classes="install-button")
+            yield Button("[l] Local (./.claude/skills)", id="btn-local", classes="install-button")
+            yield Button("Cancel", id="btn-cancel", classes="install-button")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "btn-global":
+            self.dismiss("global")
+        elif event.button.id == "btn-local":
+            self.dismiss("local")
+        else:
+            self.dismiss(None)
+
+    def action_cancel(self) -> None:
+        """Cancel installation."""
+        self.dismiss(None)
+
+    def action_select_global(self) -> None:
+        """Select global installation."""
+        self.dismiss("global")
+
+    def action_select_local(self) -> None:
+        """Select local installation."""
+        self.dismiss("local")
+
+
 def colorize_banner(text: str) -> str:
     """Apply Rich markup colors to ASCII art."""
     result = ""
@@ -261,6 +353,8 @@ class ExploreTUI(App):
         Binding("r", "refresh", "Refresh"),
         Binding("?", "help", "Help"),
         Binding("enter", "install_update", "Install/Update", show=False),
+        Binding("g", "install_global", "Install Global", show=False),
+        Binding("l", "install_local", "Install Local", show=False),
     ]
 
     current_view: reactive[str] = reactive("skills")
@@ -664,12 +758,14 @@ class ExploreTUI(App):
         """Show help."""
         if self.current_view == "usage":
             msg = "a/k/c/u: Switch view | d/w/m: Period | q: Quit | r: Refresh"
+        elif self.current_view == "skills":
+            msg = "Enter: Install | g: Global | l: Local | d: Delete | r: Refresh | q: Quit"
         else:
-            msg = "a/k/c/u: Switch view | q: Quit | r: Refresh | Enter: Install/Update | d: Delete"
+            msg = "a/k/c/u: Switch view | q: Quit | r: Refresh"
         self.notify(msg, title="Keyboard Shortcuts", severity="information")
 
     def action_install_update(self) -> None:
-        """Install or update the selected skill."""
+        """Install or update the selected skill - shows location selection popup."""
         if self.current_view != "skills":
             return
 
@@ -679,13 +775,59 @@ class ExploreTUI(App):
 
         skill = self.skills_data[table.cursor_row]
         skill_name = skill["name"]
+
+        # Show location selection popup
+        self.push_screen(InstallLocationScreen(skill_name), self._on_install_location_selected)
+
+    def _on_install_location_selected(self, location: str | None) -> None:
+        """Handle install location selection from popup."""
+        if location is None:
+            return  # Cancelled
+
+        table = self.query_one("#data-table", DataTable)
+        if table.cursor_row is None or table.cursor_row >= len(self.skills_data):
+            return
+
+        skill = self.skills_data[table.cursor_row]
+        self._do_install_at_location(skill, location)
+
+    def action_install_global(self) -> None:
+        """Install the selected skill to global location (~/.claude/skills)."""
+        if self.current_view != "skills":
+            return
+
+        table = self.query_one("#data-table", DataTable)
+        if table.cursor_row is None or table.cursor_row >= len(self.skills_data):
+            return
+
+        skill = self.skills_data[table.cursor_row]
+        self._do_install_at_location(skill, "global")
+
+    def action_install_local(self) -> None:
+        """Install the selected skill to local location (./.claude/skills)."""
+        if self.current_view != "skills":
+            return
+
+        table = self.query_one("#data-table", DataTable)
+        if table.cursor_row is None or table.cursor_row >= len(self.skills_data):
+            return
+
+        skill = self.skills_data[table.cursor_row]
+        self._do_install_at_location(skill, "local")
+
+    def _do_install_at_location(self, skill: dict, location: str) -> None:
+        """Install a skill at the specified location (global or local)."""
+        skill_name = skill["name"]
         config = skill["config"]
         latest_ver = skill.get("latest_ver")
 
-        # Determine target path (prefer global)
-        target_path = skill["global_path"]
+        # Determine target path based on location
+        if location == "local":
+            target_path = skill["local_path"]
+        else:
+            target_path = skill["global_path"]
 
-        self.notify(f"Installing {skill_name}...", severity="information")
+        self.notify(f"Installing {skill_name} ({location})...", severity="information")
 
         # Run installation in background
         self.run_worker(
