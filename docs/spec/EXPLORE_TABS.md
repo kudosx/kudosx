@@ -24,11 +24,16 @@ Thêm tính năng chuyển đổi giữa các view trong TUI explore bằng keyb
 ### Tab Indicator Style
 
 ```
-  [dim]a:Agents[/]  [bold #d77757]k:Skills[/]  [dim]c:Commands[/]  [dim]u:Usage[/]
+  [dim]a  [underline]a[/underline]gents[/]
+  [bold #d77757]k  s[underline]k[/underline]ills[/]
+  [dim]c  [underline]c[/underline]ommands[/]
+  [dim]u  [underline]u[/underline]sage[/]
 ```
 
+- **Shortcut keys**: Shown as single letter followed by label with underlined shortcut
 - Tab active: bold, màu accent (#d77757)
 - Tab inactive: dim
+- Labels: lowercase với shortcut letter được underline (agents, skills, commands, usage)
 
 ### Table Columns
 

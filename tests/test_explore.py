@@ -453,6 +453,80 @@ class TestExploreTUIAsync:
             assert "Monthly" in app.query_one("#data-table").border_title
 
 
+class TestExplorerTabs:
+    """Tests for ExplorerTabs widget."""
+
+    def test_render_contains_shortcut_keys(self):
+        """Test that shortcut keys are shown."""
+        tabs = ExplorerTabs()
+        tabs.current_tab = "skills"
+        rendered = tabs.render()
+        # All shortcut keys should be present
+        assert "a  " in rendered  # a followed by spaces
+        assert "k  " in rendered
+        assert "c  " in rendered
+        assert "u  " in rendered
+
+    def test_render_contains_underlined_shortcut_letters(self):
+        """Test that shortcut letters are underlined within labels (lowercase)."""
+        tabs = ExplorerTabs()
+        tabs.current_tab = "skills"
+        rendered = tabs.render()
+        # Shortcut letters should be underlined in labels (lowercase)
+        assert "[underline]a[/underline]gents" in rendered  # a in agents
+        assert "[underline]k[/underline]ills" in rendered   # k in skills
+        assert "[underline]c[/underline]ommands" in rendered  # c in commands
+        assert "[underline]u[/underline]sage" in rendered   # u in usage
+
+    def test_render_active_tab_has_bold_accent_color(self):
+        """Test that active tab has bold accent color."""
+        tabs = ExplorerTabs()
+        tabs.current_tab = "skills"
+        rendered = tabs.render()
+        # Active tab (skills) should have bold accent color
+        assert "[bold #d77757]k  s[underline]k[/underline]ills[/]" in rendered
+
+    def test_render_inactive_tabs_are_dimmed(self):
+        """Test that inactive tabs have dim styling."""
+        tabs = ExplorerTabs()
+        tabs.current_tab = "skills"
+        rendered = tabs.render()
+        # Inactive tabs should be dimmed
+        assert "[dim]a  [underline]a[/underline]gents[/]" in rendered
+        assert "[dim]c  [underline]c[/underline]ommands[/]" in rendered
+        assert "[dim]u  [underline]u[/underline]sage[/]" in rendered
+
+    def test_render_uses_lowercase_labels(self):
+        """Test that labels are lowercase."""
+        tabs = ExplorerTabs()
+        tabs.current_tab = "skills"
+        rendered = tabs.render()
+        # Labels should be lowercase
+        assert "gents" in rendered   # part of agents
+        assert "ills" in rendered    # part of skills
+        assert "ommands" in rendered # part of commands
+        assert "sage" in rendered    # part of usage
+        # Should NOT have uppercase labels
+        assert "Agents" not in rendered
+        assert "Skills" not in rendered
+        assert "Commands" not in rendered
+        assert "Usage" not in rendered
+
+    def test_render_changes_with_current_tab(self):
+        """Test that rendering changes when current_tab changes."""
+        tabs = ExplorerTabs()
+
+        tabs.current_tab = "skills"
+        rendered_skills = tabs.render()
+
+        tabs.current_tab = "agents"
+        rendered_agents = tabs.render()
+
+        # Active tab should have bold accent color
+        assert "[bold #d77757]k  s[underline]k[/underline]ills[/]" in rendered_skills
+        assert "[bold #d77757]a  [underline]a[/underline]gents[/]" in rendered_agents
+
+
 class TestAgents:
     """Tests for agents data."""
 

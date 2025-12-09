@@ -114,19 +114,26 @@ class ExplorerTabs(Static):
     current_tab: reactive[str] = reactive("skills")
 
     def render(self) -> str:
-        """Render vertical tabs."""
+        """Render vertical tabs.
+
+        Format: key  label with shortcut letter underlined (lowercase).
+        Example: a  agents, k  skills, c  commands, u  usage
+        """
+        # (key, before_underline, underline_char, after_underline, tab_name)
         tabs = [
-            ("a", "Agents"),
-            ("k", "Skills"),
-            ("c", "Commands"),
-            ("u", "Usage"),
+            ("a", "", "a", "gents", "agents"),       # a  _a_gents
+            ("k", "s", "k", "ills", "skills"),       # k  s_k_ills
+            ("c", "", "c", "ommands", "commands"),   # c  _c_ommands
+            ("u", "", "u", "sage", "usage"),         # u  _u_sage
         ]
         lines = []
-        for key, label in tabs:
-            if label.lower() == self.current_tab:
-                lines.append(f"[bold #d77757]{key} {label}[/]")
+        for key, before, char, after, tab_name in tabs:
+            if tab_name == self.current_tab:
+                # Active tab: bold accent color with underlined letter in label
+                lines.append(f"[bold #d77757]{key}  {before}[underline]{char}[/underline]{after}[/]")
             else:
-                lines.append(f"[dim]{key} {label}[/]")
+                # Inactive tab: dim with underlined letter in label
+                lines.append(f"[dim]{key}  {before}[underline]{char}[/underline]{after}[/]")
         return "\n".join(lines)
 
 
@@ -276,14 +283,14 @@ class ExploreTUI(App):
     }
 
     #system-info {
-        width: 24;
+        width: 20;
         padding: 1;
         border: solid #3d3d3d;
         background: #1e1e1e;
     }
 
     #explorer-tabs {
-        width: 14;
+        width: 16;
         padding: 1;
         border: solid #3d3d3d;
         background: #1e1e1e;

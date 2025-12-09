@@ -11,13 +11,13 @@ Layout với 3 phần theo chiều ngang: System Info, Explorer Tabs (vertical),
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │                                                                              │
-│  ┌─────────────────┐  ┌───────────┐  ┌────────────────────────────────────┐  │
-│  │ SYSTEM INFO     │  │ a Agents  │  │  ██╗  ██╗██╗   ██╗██████╗  ...     │  │
-│  │ OS: Darwin      │  │ k Skills  │  │  ██║ ██╔╝██║   ██║██╔══██╗ ...     │  │
-│  │ Python: 3.14    │  │ c Commands│  │  █████╔╝ ██║   ██║██║  ██║ ...     │  │
-│  │ Claude: 2.0.60  │  │           │  │  ...                               │  │
-│  │ Kudosx: 0.2.5   │  │           │  │                                    │  │
-│  └─────────────────┘  └───────────┘  └────────────────────────────────────┘  │
+│  ┌───────────────┐  ┌────────────┐  ┌─────────────────────────────────────┐  │
+│  │ SYSTEM INFO   │  │ a  agents  │  │  ██╗  ██╗██╗   ██╗██████╗  ...      │  │
+│  │ OS: Darwin    │  │ k  skills← │  │  ██║ ██╔╝██║   ██║██╔══██╗ ...      │  │
+│  │ Python: 3.14  │  │ c  commands│  │  █████╔╝ ██║   ██║██║  ██║ ...      │  │
+│  │ Claude: 2.0   │  │ u  usage   │  │  ...                                │  │
+│  │ Kudosx: 0.3   │  │            │  │                                     │  │
+│  └───────────────┘  └────────────┘  └─────────────────────────────────────┘  │
 │                                                                              │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │  ╭─────────────────────────────── Skills ────────────────────────────────╮   │
@@ -34,8 +34,8 @@ Layout với 3 phần theo chiều ngang: System Info, Explorer Tabs (vertical),
 
 | Component | Position | Width | Description |
 |-----------|----------|-------|-------------|
-| System Info | Left | 24 | OS, Python, Claude version |
-| Explorer Tabs | Center | 14 | Vertical tab list |
+| System Info | Left | 20 | OS, Python, Claude version |
+| Explorer Tabs | Center | 16 | Vertical tab list |
 | KudosX Banner | Right | 1fr | ASCII art logo |
 
 ### System Info Content
@@ -65,14 +65,15 @@ f"[#d77757]Kudosx :[/] {kudosx_ver}"
 ### Explorer Tabs (Vertical)
 
 ```
-a Agents
-k Skills    ← active (highlighted)
-c Commands
-u Usage
+a  agents      ← 'a' underlined
+k  skills      ← active (highlighted), 'k' underlined
+c  commands    ← 'c' underlined
+u  usage       ← 'u' underlined
 ```
 
 - Active tab: bold, orange (#d77757)
 - Inactive tabs: dim
+- Shortcut letter underlined within label (lowercase)
 
 ### KudosX Banner
 
@@ -89,14 +90,14 @@ ASCII art logo với version info, right-aligned trong container.
 }
 
 #system-info {
-    width: 24;
+    width: 20;
     padding: 1;
     border: solid #3d3d3d;
     background: #1e1e1e;
 }
 
 #explorer-tabs {
-    width: 14;
+    width: 16;
     padding: 1;
     border: solid #3d3d3d;
     background: #1e1e1e;
@@ -168,18 +169,19 @@ class ExplorerTabs(Static):
     current_tab: reactive[str] = reactive("skills")
 
     def render(self) -> str:
+        # (key, before_underline, underline_char, after_underline, tab_name)
         tabs = [
-            ("a", "Agents"),
-            ("k", "Skills"),
-            ("c", "Commands"),
-            ("u", "Usage"),
+            ("a", "", "a", "gents", "agents"),       # a  _a_gents
+            ("k", "s", "k", "ills", "skills"),       # k  s_k_ills
+            ("c", "", "c", "ommands", "commands"),   # c  _c_ommands
+            ("u", "", "u", "sage", "usage"),         # u  _u_sage
         ]
         lines = []
-        for key, label in tabs:
-            if label.lower() == self.current_tab:
-                lines.append(f"[bold #d77757]{key} {label}[/]")
+        for key, before, char, after, tab_name in tabs:
+            if tab_name == self.current_tab:
+                lines.append(f"[bold #d77757]{key}  {before}[underline]{char}[/underline]{after}[/]")
             else:
-                lines.append(f"[dim]{key} {label}[/]")
+                lines.append(f"[dim]{key}  {before}[underline]{char}[/underline]{after}[/]")
         return "\n".join(lines)
 ```
 

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Footer bar spec documentation with keyboard shortcuts reference
+- Tests for ExplorerTabs widget (shortcut keys, underlined letters, styling)
+
+### Changed
+
+- Explorer tabs use lowercase labels with underlined shortcut letters (a/k/c/u)
+- Adjusted header layout widths (System Info: 20, Explorer Tabs: 16)
+
 ## 0.3.3 - 2025-12-08
 
 ### Added
