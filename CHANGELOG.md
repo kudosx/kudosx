@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 0.3.5 - 2025-12-09
+
+### Changed
+
+- Improved `/commit-code` command to use Unreleased section for releases
+- GitHub release notes now include changelog content instead of generic message
+
 ## 0.3.4 - 2025-12-09
 
 ### Added
