@@ -2,6 +2,7 @@
 
 import re
 import shutil
+import ssl
 import subprocess
 import tempfile
 import zipfile
@@ -11,6 +12,81 @@ from urllib.error import URLError, HTTPError
 
 import click
 import yaml
+
+
+def get_ssl_context(verify: bool = True) -> ssl.SSLContext:
+    """Create an SSL context for HTTPS requests.
+
+    Args:
+        verify: Whether to verify SSL certificates (default True)
+
+    Returns:
+        SSL context configured for connections
+    """
+    if verify:
+        return ssl.create_default_context()
+    else:
+        # Unverified context for environments with certificate issues
+        # (e.g., corporate proxies, VPNs with self-signed certs)
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return ctx
+
+
+def urlopen_with_retry(url: str, timeout: int = 10):
+    """Open URL with automatic SSL fallback.
+
+    First tries with SSL verification, then falls back to unverified
+    if certificate verification fails.
+
+    Args:
+        url: URL to fetch
+        timeout: Request timeout in seconds
+
+    Returns:
+        Response object from urlopen
+    """
+    # First try with SSL verification
+    try:
+        ssl_context = get_ssl_context(verify=True)
+        return urlopen(url, timeout=timeout, context=ssl_context)
+    except (URLError, ssl.SSLError) as e:
+        # Check if it's an SSL certificate error
+        error_str = str(e)
+        if "CERTIFICATE_VERIFY_FAILED" in error_str or "SSL" in error_str:
+            # Retry without SSL verification
+            ssl_context = get_ssl_context(verify=False)
+            return urlopen(url, timeout=timeout, context=ssl_context)
+        raise
+
+
+def request_with_retry(request: Request, timeout: int = 10):
+    """Open Request with automatic SSL fallback.
+
+    First tries with SSL verification, then falls back to unverified
+    if certificate verification fails.
+
+    Args:
+        request: Request object to fetch
+        timeout: Request timeout in seconds
+
+    Returns:
+        Response object from urlopen
+    """
+    # First try with SSL verification
+    try:
+        ssl_context = get_ssl_context(verify=True)
+        return urlopen(request, timeout=timeout, context=ssl_context)
+    except (URLError, ssl.SSLError) as e:
+        # Check if it's an SSL certificate error
+        error_str = str(e)
+        if "CERTIFICATE_VERIFY_FAILED" in error_str or "SSL" in error_str:
+            # Retry without SSL verification
+            ssl_context = get_ssl_context(verify=False)
+            return urlopen(request, timeout=timeout, context=ssl_context)
+        raise
+
 
 # Path to local bundled skills registry
 SKILLS_YAML = Path(__file__).parent.parent / "repo" / "skills.yaml"
@@ -30,11 +106,11 @@ def load_skills_from_remote() -> dict | None:
     """
     try:
         request = Request(REMOTE_SKILLS_URL, headers={"User-Agent": "kudosx"})
-        with urlopen(request, timeout=5) as response:
+        with request_with_retry(request, timeout=5) as response:
             content = response.read().decode("utf-8")
             data = yaml.safe_load(content)
             return data.get("skills", {})
-    except (URLError, HTTPError, yaml.YAMLError, OSError):
+    except (URLError, HTTPError, yaml.YAMLError, OSError, ssl.SSLError):
         return None
 
 
@@ -48,23 +124,26 @@ def load_skills_from_local() -> dict:
 
 
 def load_skills() -> dict:
-    """Load skills from remote, fallback to local.
+    """Load skills by merging local and remote registries.
+
+    Local skills are loaded first, then remote skills are merged in.
+    Remote skills take precedence for version info (latest field).
 
     Returns:
-        Skills dict from remote or local registry
+        Merged skills dict from local and remote registries
     """
     global _skills_cache
     if _skills_cache is not None:
         return _skills_cache
 
-    # Try remote first
-    skills = load_skills_from_remote()
-    if skills:
-        _skills_cache = skills
-        return skills
-
-    # Fallback to local
+    # Start with local skills
     skills = load_skills_from_local()
+
+    # Merge remote skills (remote takes precedence for existing keys)
+    remote_skills = load_skills_from_remote()
+    if remote_skills:
+        skills.update(remote_skills)
+
     _skills_cache = skills
     return skills
 
@@ -190,13 +269,15 @@ def download_and_extract_skill(
 
         # Download zip file
         try:
-            with urlopen(zip_url) as response:
+            with urlopen_with_retry(zip_url, timeout=30) as response:
                 with open(zip_path, "wb") as f:
                     f.write(response.read())
         except HTTPError as e:
             raise click.ClickException(f"Failed to download: HTTP {e.code} - {e.reason}")
         except URLError as e:
             raise click.ClickException(f"Failed to download: {e.reason}")
+        except ssl.SSLError as e:
+            raise click.ClickException(f"SSL error during download: {e}")
 
         click.echo("Extracting archive...")
 
@@ -256,6 +337,8 @@ def add(name: str, force: bool, local: bool):
         skill-browser-use    Browser automation skill
 
         skill-cloud-aws      AWS cloud management skill
+
+        skill-product-aio    Product management, feature planning, and documentation
 
     Examples:
 

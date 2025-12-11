@@ -44,6 +44,10 @@ Kudosx utilizes specialized Skills to enhance agent capabilities and streamline 
 
 - [Browser Use](https://github.com/kudosx/claude-skill-browser-use) - Web scraping, screenshots, form filling, file downloads/uploads, Google/DuckDuckGo image search, YouTube video downloading, and TikTok video downloading.
 
+**Product Skills**
+
+- [Product AIO](https://github.com/kudosx/claude-skill-product-aio) - Product management, feature planning, and documentation.
+
 ## Claude Code
 
 Kudosx is designed to work seamlessly with [Claude Code](https://www.claude.com/product/claude-code), Anthropic's official CLI for Claude. It leverages Claude Code's agentic capabilities to orchestrate AI team members and execute software development tasks directly from your terminal.

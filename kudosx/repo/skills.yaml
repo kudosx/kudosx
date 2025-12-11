@@ -12,3 +12,10 @@ skills:
     target_dir: cloud-aws
     latest: 0.0.3
     description: AWS cloud management skill
+
+  skill-product-aio:
+    repo: kudosx/claude-skill-product-aio
+    source_path: .claude/skills/product-aio
+    target_dir: product-aio
+    latest: 0.0.1
+    description: Product management, feature planning, and documentation

@@ -5,10 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## 0.4.0 - 2025-12-11
+
+### Added
+
+- `skill-product-aio` skill for product management, feature planning, and documentation
+
+### Fixed
+
+- SSL certificate verification errors when downloading skills (auto-fallback for corporate proxies/VPNs)
 
 ### Changed
 
+- Skills registry now merges local and remote sources (local skills available immediately)
 - Rename `docs/business-process/` to `docs/process/`
 
 ## 0.3.7 - 2025-12-09
