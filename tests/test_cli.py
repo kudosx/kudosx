@@ -219,7 +219,7 @@ class TestUpdateCommand:
             )
         )
         runner = CliRunner()
-        result = runner.invoke(cli, ["update", "skill-browser-use"])
+        result = runner.invoke(cli, ["update", "browser-use"])
         assert result.exit_code == 1
         assert "not installed" in result.output
 
@@ -240,7 +240,7 @@ class TestUpdateCommand:
         mock_get_latest.return_value = "v1.1.0"
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["update", "skill-browser-use"])
+        result = runner.invoke(cli, ["update", "browser-use"])
 
         # Should attempt to download and extract
         assert mock_get_latest.called
@@ -260,7 +260,7 @@ class TestUpdateCommand:
         mock_get_latest.return_value = "v1.0.0"
 
         runner = CliRunner()
-        result = runner.invoke(cli, ["update", "skill-browser-use"])
+        result = runner.invoke(cli, ["update", "browser-use"])
 
         assert "up-to-date" in result.output
 
@@ -401,8 +401,8 @@ skills:
         result = load_skills_from_local()
 
         assert result is not None
-        assert "skill-browser-use" in result
-        assert "skill-cloud-aws" in result
+        assert "browser-use" in result
+        assert "cloud-aws" in result
 
     @patch("kudosx.commands.add.load_skills_from_remote")
     @patch("kudosx.commands.add.load_skills_from_local")

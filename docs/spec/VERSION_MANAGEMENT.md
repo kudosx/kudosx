@@ -13,7 +13,7 @@ Version management for Skills, Commands, and Agents trong Kudosx ecosystem. Cho 
 │                kudosx/repo/skills.yaml                          │
 │                                                                 │
 │  skills:                                                        │
-│    skill-browser-use:                                           │
+│    browser-use:                                                 │
 │      repo: kudosx/claude-skill-browser-use                      │
 │      latest: 0.1.1                                              │
 │      ...                                                        │
@@ -48,14 +48,14 @@ Version management for Skills, Commands, and Agents trong Kudosx ecosystem. Cho 
 
 ```yaml
 skills:
-  skill-browser-use:
+  browser-use:
     repo: kudosx/claude-skill-browser-use
     source_path: .claude/skills/browser-use
     target_dir: browser-use
     latest: 0.1.1
     description: Browser automation skill
 
-  skill-cloud-aws:
+  cloud-aws:
     repo: kudosx/claude-skill-cloud-aws
     source_path: .claude/skills/cloud-aws
     target_dir: cloud-aws
@@ -95,8 +95,8 @@ kudosx repo sync
 **Example output:**
 ```
 Syncing skill versions...
-  skill-browser-use: 0.1.0 → 0.1.1
-  skill-cloud-aws: 0.0.3 (unchanged)
+  browser-use: 0.1.0 → 0.1.1
+  cloud-aws: 0.0.3 (unchanged)
 Updated kudosx/repo/skills.yaml
 ```
 
@@ -115,9 +115,9 @@ kudosx update [name] [--all] [--local]
 
 **Examples:**
 ```bash
-kudosx update skill-browser-use      # Update specific skill
-kudosx update --all                   # Update all global skills
-kudosx update --all --local           # Update all local skills
+kudosx update browser-use      # Update specific skill
+kudosx update --all            # Update all global skills
+kudosx update --all --local    # Update all local skills
 ```
 
 ## Implementation

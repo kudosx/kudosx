@@ -129,7 +129,7 @@ def update(name: str | None, update_all: bool, local: bool, force: bool):
 
     Examples:
 
-        kudosx update skill-browser-use
+        kudosx update browser-use
 
         kudosx update --all
 

@@ -23,15 +23,15 @@ def remove(name: str, local: bool):
 
     Available skills:
 
-        skill-browser-use    Browser automation skill
+        browser-use    Browser automation skill
 
-        skill-cloud-aws      AWS cloud management skill
+        cloud-aws      AWS cloud management skill
 
     Examples:
 
-        kudosx remove skill-browser-use
+        kudosx remove browser-use
 
-        kudosx remove skill-browser-use --local
+        kudosx remove browser-use --local
     """
     if name not in SKILLS:
         available = ", ".join(SKILLS.keys())

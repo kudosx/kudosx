@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kudosx"
-version = "0.4.0"
+version = "0.4.1"
 description = "Kudosx - An AI software team that builds products with industry standard practices."
 readme = "README.md"
 requires-python = ">=3.10"
