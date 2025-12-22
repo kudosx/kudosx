@@ -53,14 +53,14 @@ kudosx add <name> [--force] [--local]
 - `-l, --local` - Install to project folder (./.claude/skills) instead of global (~/.claude/skills)
 
 **Available Skills:**
-- `skill-browser-use` - Browser automation skill
-- `skill-cloud-aws` - AWS cloud management skill
+- `browser-use` - Browser automation skill
+- `cloud-aws` - AWS cloud management skill
 
 **Examples:**
 ```bash
-kudosx add skill-browser-use
-kudosx add skill-browser-use --force
-kudosx add skill-browser-use --local
+kudosx add browser-use
+kudosx add browser-use --force
+kudosx add browser-use --local
 ```
 
 ### kudosx remove
@@ -79,8 +79,8 @@ kudosx remove <name> [--local]
 
 **Examples:**
 ```bash
-kudosx remove skill-browser-use
-kudosx remove skill-browser-use --local
+kudosx remove browser-use
+kudosx remove browser-use --local
 ```
 
 ### kudosx update
@@ -100,9 +100,9 @@ kudosx update [name] [--all] [--local]
 
 **Examples:**
 ```bash
-kudosx update skill-browser-use       # Update specific skill
-kudosx update --all                    # Update all global skills
-kudosx update --all --local            # Update all local skills
+kudosx update browser-use       # Update specific skill
+kudosx update --all             # Update all global skills
+kudosx update --all --local     # Update all local skills
 ```
 
 See [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md) for detailed version management spec.
@@ -261,8 +261,8 @@ kudosx repo sync
 **Example output:**
 ```
 Syncing skill versions...
-  skill-browser-use: 0.1.0 → 0.1.1
-  skill-cloud-aws: 0.0.3 (unchanged)
+  browser-use: 0.1.0 → 0.1.1
+  cloud-aws: 0.0.3 (unchanged)
 Updated kudosx/repo/skills.yaml
 ```
 

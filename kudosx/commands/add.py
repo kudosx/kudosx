@@ -334,19 +334,19 @@ def add(name: str, force: bool, local: bool):
 
     Available skills:
 
-        skill-browser-use    Browser automation skill
+        browser-use    Browser automation skill
 
-        skill-cloud-aws      AWS cloud management skill
+        cloud-aws      AWS cloud management skill
 
-        skill-product-aio    Product management, feature planning, and documentation
+        product-aio    Product management, feature planning, and documentation
 
     Examples:
 
-        kudosx add skill-browser-use
+        kudosx add browser-use
 
-        kudosx add skill-browser-use --force
+        kudosx add browser-use --force
 
-        kudosx add skill-browser-use --local
+        kudosx add browser-use --local
     """
     if name not in SKILLS:
         available = ", ".join(SKILLS.keys())
